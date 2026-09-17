@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LCARS Tactical - Threat Swarm</title>
+    <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --lcars-red: #cc3333;
+            --lcars-orange: #ff9900;
+            --lcars-yellow: #ffcc00;
+            --lcars-peach: #ffcc99;
+            --lcars-dark: #000000;
+            --lcars-gray: #1a1a1a;
+            --font-main: 'Antonio', sans-serif;
+        }
+        body { background: var(--lcars-dark); color: white; font-family: var(--font-main); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .lcars-container { width: 880px; display: flex; flex-direction: column; gap: 12px; }
+        .lcars-bar { background: var(--lcars-gray); border: 2px solid var(--lcars-red); border-radius: 18px; padding: 8px 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .lcars-bar label { font-size: 10pt; color: var(--lcars-red); font-weight: bold; }
+        .lcars-bar input { flex-grow: 1; background: black; border: 1px solid var(--lcars-orange); color: var(--lcars-orange); padding: 4px 8px; font-family: var(--font-main); border-radius: 4px; }
+        .lcars-header { display: flex; justify-content: space-between; align-items: center; background: var(--lcars-red); color: black; border-radius: 25px 25px 0 0; padding: 8px 24px; font-weight: bold; }
+        .lcars-panel { border: 2px solid; border-radius: 8px; padding: 12px; position: relative; background: rgba(25,25,25,0.7); }
+        .lcars-panel.red { border-color: var(--lcars-red); }
+        .lcars-panel.orange { border-color: var(--lcars-orange); }
+        .lcars-panel.yellow { border-color: var(--lcars-yellow); }
+        .lcars-title { position: absolute; top: -10px; left: 15px; background: var(--lcars-dark); padding: 0 8px; font-weight: bold; text-transform: uppercase; font-size: 10pt; }
+        .red .lcars-title { color: var(--lcars-red); }
+        .orange .lcars-title { color: var(--lcars-orange); }
+        .yellow .lcars-title { color: var(--lcars-yellow); }
+        input[type="text"], input[type="number"], textarea { width: 100%; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.3); color: white; font-family: var(--font-main); font-size: 11pt; padding: 3px 0; box-sizing: border-box; text-transform: uppercase; }
+        input:focus, textarea:focus { outline: none; border-bottom-color: var(--lcars-red); }
+        label { display: block; font-size: 8.5pt; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-top: 5px; }
+        .lcars-btn { background: var(--lcars-red); color: black; border: none; border-radius: 12px; padding: 4px 10px; font-family: var(--font-main); font-weight: bold; font-size: 9.5pt; cursor: pointer; text-transform: uppercase; }
+        .lcars-btn.orange { background: var(--lcars-orange); }
+        .lcars-btn.yellow { background: var(--lcars-yellow); }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .station-row { display: grid; grid-template-columns: 110px 1fr 60px; gap: 8px; align-items: center; margin-bottom: 6px; background: rgba(204,51,51,0.08); padding: 4px 8px; border-radius: 4px; }
+        .station-label { font-size: 9.5pt; font-weight: bold; color: var(--lcars-red); }
+        .stress-bar-grid { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+        .stress-bar-grid input[type="checkbox"] { appearance: none; width: 26px; height: 22px; border: 2px solid var(--lcars-red); border-radius: 4px; cursor: pointer; }
+        .stress-bar-grid input[type="checkbox"]:checked { background: var(--lcars-red); }
+
+        .schematic-box {
+            border: 2px dashed var(--lcars-red);
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 8px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .schematic-box:hover {
+            border-color: var(--lcars-yellow);
+            background: rgba(255, 204, 0, 0.05);
+        }
+        .schematic-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+        .schematic-prompt {
+            text-align: center;
+            color: var(--lcars-red);
+            font-size: 9pt;
+            letter-spacing: 1px;
+            pointer-events: none;
+        }
+        .schematic-clear-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(204, 51, 51, 0.85);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 7.5pt;
+            font-weight: bold;
+            padding: 2px 6px;
+            display: none;
+            cursor: pointer;
+            font-family: var(--font-main);
+        }
+        .schematic-clear-btn:hover { background: var(--lcars-red); }
+    </style>
+</head>
+<body>
+<div class="lcars-container">
+    <div class="lcars-bar">
+        <label for="webhook-url">SUBSPACE RELAY:</label>
+        <input type="password" id="webhook-url" placeholder="Discord Webhook URL..." onchange="saveWebhook()">
+        <button class="lcars-btn orange" onclick="toggleWebhookVisibility()">SHOW/HIDE</button>
+        <button class="lcars-btn yellow" id="audio-toggle-btn" onclick="toggleAudio()">AUDIO: ON</button>
+        <button class="lcars-btn" onclick="broadcastShipStatus()">📡 BROADCAST SWARM</button>
+        <button class="lcars-btn orange" onclick="exportData()">💾 EXPORT</button>
+        <button class="lcars-btn yellow" onclick="document.getElementById('file-in').click()">📂 IMPORT</button>
+        <input type="file" id="file-in" accept=".json" style="display:none;" onchange="importData(event)">
+        <span id="status" style="font-size: 10pt; color: var(--lcars-yellow); margin-left: auto;">READY</span>
+    </div>
+
+    <div class="lcars-header">
+        <span style="font-size: 18pt; letter-spacing: 2px;">TACTICAL THREAT DISPLAY // HOSTILE MOB SWARM</span>
+        <span style="font-size: 10pt;">HOSTILE WOLFPACK / RAIDER SQUADRON</span>
+    </div>
+
+    <section class="lcars-panel red">
+        <div class="lcars-title">SWARM IDENTIFICATION & SCHEMATIC</div>
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px; align-items: stretch;">
+            <div>
+                <div class="grid-4">
+                    <div><label>SWARM IDENTIFIER</label><input type="text" id="ship-name" placeholder="e.g. NAUSICAAN WOLFPACK" oninput="save()"></div>
+                    <div><label>RAIDER CLASS</label><input type="text" id="ship-reg" placeholder="e.g. RAIDER INTERCEPTORS" oninput="save()"></div>
+                    <div><label>FACTION</label><input type="text" id="ship-class" placeholder="e.g. ORION SYNDICATE" oninput="save()"></div>
+                    <div><label>WARLORD / LEADER</label><input type="text" id="ship-co" placeholder="e.g. WARLORD TOV" oninput="save()"></div>
+                </div>
+                <div class="grid-2" style="margin-top: 6px;">
+                    <div><label>SWARM HIGH CONCEPT</label><input type="text" id="ship-hc" placeholder="e.g. Vicious Pirate Interceptor Pack" oninput="save()"></div>
+                    <div><label>SWARM TROUBLE / FLAW</label><input type="text" id="ship-tr" placeholder="e.g. Undisciplined Under Heavy Fire" oninput="save()"></div>
+                </div>
+            </div>
+            <div style="display: flex; flex-direction: column;">
+                <label style="margin-top: 0;">TACTICAL SCHEMATIC</label>
+                <div class="schematic-box" id="schematic-box" onclick="triggerImagePicker(event)">
+                    <img id="schematic-img" src="" alt="Swarm Schematic">
+                    <div id="schematic-prompt" class="schematic-prompt">
+                        <div>📷 [ LOAD SCHEMATIC ]</div>
+                        <div style="font-size: 7.5pt; color: var(--lcars-yellow); margin-top: 3px;">CLICK TO SELECT SAVED FILE</div>
+                    </div>
+                    <button class="schematic-clear-btn" id="schematic-clear-btn" onclick="clearImage(event)">✕ REMOVE</button>
+                    <input type="file" id="image-file-input" accept="image/*" style="display: none;" onchange="loadImageFromDisk(event)">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="grid-2">
+        <section class="lcars-panel orange">
+            <div class="lcars-title">PACK RATINGS & ACTIVE UNITS</div>
+            <div class="grid-2">
+                <div>
+                    <label>RAIDER CODIE</label>
+                    <input type="number" id="ship-codie" placeholder="e.g. 6" oninput="save()">
+                </div>
+                <div>
+                    <label>SWARM SaMS</label>
+                    <input type="number" id="ship-sams" placeholder="e.g. 7" oninput="save()">
+                </div>
+            </div>
+            <div style="margin-top: 8px;">
+                <label>ACTIVE RAIDERS (UNCHECK WHEN DESTROYED)</label>
+                <div class="stress-bar-grid">
+                    <label><input type="checkbox" id="craft-1" onchange="checkAudio()"><br>R1</label>
+                    <label><input type="checkbox" id="craft-2" onchange="checkAudio()"><br>R2</label>
+                    <label><input type="checkbox" id="craft-3" onchange="checkAudio()"><br>R3</label>
+                    <label><input type="checkbox" id="craft-4" onchange="checkAudio()"><br>R4</label>
+                    <label><input type="checkbox" id="craft-5" onchange="checkAudio()"><br>R5</label>
+                    <label><input type="checkbox" id="craft-6" onchange="checkAudio()"><br>R6</label>
+                </div>
+            </div>
+            <div style="margin-top: 8px;">
+                <label>SWARM DAMAGE TRACK</label>
+                <div class="stress-bar-grid">
+                    <label><input type="checkbox" id="ss-1" onchange="checkAudio()"><br>1</label>
+                    <label><input type="checkbox" id="ss-2" onchange="checkAudio()"><br>2</label>
+                    <label><input type="checkbox" id="ss-3" onchange="checkAudio()"><br>3</label>
+                    <label><input type="checkbox" id="ss-4" onchange="checkAudio()"><br>4</label>
+                    <label><input type="checkbox" id="ss-5" onchange="checkAudio()"><br>5</label>
+                    <label><input type="checkbox" id="ss-6" onchange="checkAudio()"><br>6</label>
+                </div>
+            </div>
+        </section>
+
+        <section class="lcars-panel red">
+            <div class="lcars-title">PACK ATTACK PROTOCOLS (CLICK ROLL)</div>
+            <div class="station-row">
+                <span class="station-label">DISRUPTORS</span>
+                <input type="text" id="st-tac" placeholder="e.g. Disruptor Strafe (+4)" oninput="save()">
+                <button class="lcars-btn" onclick="rollStation('DISRUPTOR STRAFE', 'st-tac')">ROLL</button>
+            </div>
+            <div class="station-row">
+                <span class="station-label">GRAPPLE</span>
+                <input type="text" id="st-grap" placeholder="e.g. Boarding Clamps (+4)" oninput="save()">
+                <button class="lcars-btn" onclick="rollStation('BOARDING CLAMPS', 'st-grap')">ROLL</button>
+            </div>
+            <div class="station-row">
+                <span class="station-label">EVASION</span>
+                <input type="text" id="st-helm" placeholder="e.g. Scattered Evasion (+4)" oninput="save()">
+                <button class="lcars-btn" onclick="rollStation('SWARM EVASION', 'st-helm')">ROLL</button>
+            </div>
+            <div class="station-row">
+                <span class="station-label">PACK TACTICS</span>
+                <input type="text" id="st-cmd" placeholder="e.g. Wolfpack Surround (+3)" oninput="save()">
+                <button class="lcars-btn" onclick="rollStation('PACK TACTICS', 'st-cmd')">ROLL</button>
+            </div>
+        </section>
+    </div>
+
+    <section class="lcars-panel red">
+        <div class="lcars-title">PACK DOCTRINE & LETHAL TRAITS</div>
+        <textarea id="ship-stunts" style="height: 65px;" placeholder="• Pack Attack (+1 to hit for each operational raider in formation)&#10;• Magnetic Boarding Spikes (anchors to hull, preventing warp jump)"></textarea>
+    </section>
+</div>
+
+<script>
+    let audioCtx = null, audioEnabled = true;
+    function getAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); return audioCtx; }
+    function toggleAudio() { audioEnabled = !audioEnabled; const b = document.getElementById('audio-toggle-btn'); b.textContent = audioEnabled ? "AUDIO: ON" : "AUDIO: OFF"; if (audioEnabled) playPip(); }
+    function playPip() { if (!audioEnabled) return; const c = getAudio(), o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(750+Math.random()*250, c.currentTime); g.gain.setValueAtTime(0.08, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime+0.04); o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime+0.04); }
+    function playRoll() { if (!audioEnabled) return; const c = getAudio(), now = c.currentTime, o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(950, now); o.frequency.setValueAtTime(1350, now+0.04); g.gain.setValueAtTime(0.12, now); g.gain.exponentialRampToValueAtTime(0.001, now+0.12); o.connect(g); g.connect(c.destination); o.start(); o.stop(now+0.12); }
+    function playConfirm() { if (!audioEnabled) return; const c = getAudio(), now = c.currentTime; [784, 1046, 1568].forEach((f, i) => { const o = c.createOscillator(), g = c.createGain(), st = now + (i * 0.04); o.type = 'sine'; o.frequency.setValueAtTime(f, st); g.gain.setValueAtTime(0.1, st); g.gain.exponentialRampToValueAtTime(0.001, st+0.06); o.connect(g); g.connect(c.destination); o.start(st); o.stop(st+0.06); }); }
+    function checkAudio() { playPip(); save(); }
+
+    function triggerImagePicker(event) {
+        if (event.target.id === 'schematic-clear-btn') return;
+        playPip();
+        document.getElementById('image-file-input').click();
+    }
+
+    function loadImageFromDisk(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            displayLoadedImage(e.target.result);
+            save();
+            playConfirm();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function displayLoadedImage(dataUrl) {
+        const img = document.getElementById('schematic-img');
+        const prompt = document.getElementById('schematic-prompt');
+        const clearBtn = document.getElementById('schematic-clear-btn');
+        const box = document.getElementById('schematic-box');
+
+        if (dataUrl && dataUrl.startsWith('data:image')) {
+            img.src = dataUrl;
+            img.style.display = 'block';
+            prompt.style.display = 'none';
+            clearBtn.style.display = 'block';
+            box.style.borderStyle = 'solid';
+        } else {
+            img.src = '';
+            img.style.display = 'none';
+            prompt.style.display = 'block';
+            clearBtn.style.display = 'none';
+            box.style.borderStyle = 'dashed';
+        }
+    }
+
+    function clearImage(event) {
+        event.stopPropagation();
+        playPip();
+        displayLoadedImage('');
+        document.getElementById('image-file-input').value = '';
+        save();
+    }
+
+    function getLadder(v) { const l = ["Abysmal","Terrible","Poor","Mediocre","Average","Fair","Good","Great","Superb","Fantastic","Epic","Legendary"]; return v < -2 ? `Abysmal (${v})` : (v > 8 ? `Legendary (+${v})` : `${l[v+2]} (${v>=0?'+'+v:v})`); }
+    function roll4dF() { const f = [-1,0,1], s = {"-1":"[-]","0":"[ ]","1":"[+]"}; let d = "", sum = 0; for(let i=0;i<4;i++){ const r = f[Math.floor(Math.random()*3)]; d += s[r]+" "; sum += r; } return { d: d.trim(), sum }; }
+
+    async function sendDiscord(station, actionName, mod) {
+        playRoll();
+        const url = document.getElementById('webhook-url').value.trim();
+        const st = document.getElementById('status');
+        if (!url.startsWith('http')) { alert("Enter valid Subspace Webhook URL."); return; }
+        const squad = document.getElementById('ship-name').value.trim() || "Threat Swarm";
+        const dice = roll4dF(); const tot = dice.sum + mod;
+        const payload = { username: `⚔️ ${squad}`, embeds: [{ title: `[${station}] ${actionName}: ${tot >= 0 ? '+' + tot : tot} (${getLadder(tot)})`, description: `**Dice:** \`${dice.d}\`\n**Roll Sum:** ${dice.sum} | **Modifier:** ${mod >= 0 ? '+' + mod : mod}`, color: 13382451 }] };
+        st.textContent = "TRANSMITTING...";
+        try {
+            const r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+            if (r.ok) { playConfirm(); st.textContent = "SENT"; setTimeout(()=>st.textContent="READY",2500); }
+        } catch(e) { st.textContent = "FAILED"; }
+    }
+
+    function rollStation(station, id) {
+        const val = document.getElementById(id).value.trim();
+        const match = val.match(/([+-]?\d+)/);
+        const mod = match ? parseInt(match[1], 10) : 0;
+        sendDiscord(station, val || "Maneuver", mod);
+    }
+
+    async function broadcastShipStatus() {
+        playRoll();
+        const url = document.getElementById('webhook-url').value.trim();
+        if (!url.startsWith('http')) { alert("Subspace Relay Offline."); return; }
+        const name = document.getElementById('ship-name').value.trim() || "Threat Swarm";
+        const reg = document.getElementById('ship-reg').value.trim();
+        const codie = document.getElementById('ship-codie').value || "0";
+        const sams = document.getElementById('ship-sams').value || "0";
+        const activeCraft = [1,2,3,4,5,6].map(i => document.getElementById(`craft-${i}`).checked ? '[X]' : '[ ]').join(' ');
+        const stress = [1,2,3,4,5,6].map(i => document.getElementById(`ss-${i}`).checked ? '[X]' : '[ ]').join(' ');
+
+        const payload = {
+            username: `THREAT REPORT // ${name}`,
+            embeds: [{
+                title: `🚨 SWARM TELEMETRY: ${name} (${reg})`,
+                description: `**Raider CODIE:** ${codie} | **Swarm SaMS:** ${sams}`,
+                color: 13382451,
+                fields: [
+                    { name: "Active Raiders (1-6)", value: `\`${activeCraft}\`` },
+                    { name: "Swarm Damage Track", value: `\`${stress}\`` }
+                ]
+            }]
+        };
+        await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+        playConfirm();
+    }
+
+    function save() {
+        const data = {};
+        document.querySelectorAll('input, textarea').forEach(el => { 
+            if (el.id && el.id !== 'webhook-url' && el.id !== 'file-in' && el.id !== 'image-file-input') {
+                data[el.id] = el.type === 'checkbox' ? el.checked : el.value; 
+            }
+        });
+        data['schematic_image_data'] = document.getElementById('schematic-img').src;
+        localStorage.setItem('lcars_ship_mob_hostile_data', JSON.stringify(data));
+    }
+    function saveWebhook() { playPip(); localStorage.setItem('lcars_ship_mob_hostile_webhook', document.getElementById('webhook-url').value); }
+    function toggleWebhookVisibility() { playPip(); const el = document.getElementById('webhook-url'); el.type = el.type === 'password' ? 'text' : 'password'; }
+
+    function exportData() {
+        playPip(); save();
+        const blob = new Blob([localStorage.getItem('lcars_ship_mob_hostile_data') || '{}'], { type: 'application/json' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = `SWARM_${(document.getElementById('ship-name').value || 'Pack').replace(/\s+/g,'_')}.json`;
+        a.click(); playConfirm();
+    }
+    function importData(e) {
+        const file = e.target.files[0]; if (!file) return;
+        const r = new FileReader();
+        r.onload = ev => {
+            const data = JSON.parse(ev.target.result);
+            for (let k in data) { 
+                const el = document.getElementById(k); 
+                if (el) { 
+                    if (el.type === 'checkbox') el.checked = data[k]; 
+                    else el.value = data[k]; 
+                } 
+            }
+            if (data['schematic_image_data']) displayLoadedImage(data['schematic_image_data']);
+            save(); playConfirm();
+        };
+        r.readAsText(file);
+    }
+    window.addEventListener('DOMContentLoaded', () => {
+        const w = localStorage.getItem('lcars_ship_mob_hostile_webhook'); if (w) document.getElementById('webhook-url').value = w;
+        const d = JSON.parse(localStorage.getItem('lcars_ship_mob_hostile_data') || '{}');
+        for (let k in d) { 
+            const el = document.getElementById(k); 
+            if (el) { 
+                if (el.type === 'checkbox') el.checked = d[k]; 
+                else el.value = d[k]; 
+            } 
+        }
+        if (d['schematic_image_data']) displayLoadedImage(d['schematic_image_data']);
+    });
+</script>
+</body>
+</html>
