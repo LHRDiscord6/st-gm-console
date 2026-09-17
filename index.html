@@ -3,42 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LCARS MSD - Player Starship</title>
+    <title>LCARS MSD - Player Starship Console</title>
     <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --orange: #ff9900; --purple: #cc99cc; --blue: #99ccff; --yellow: #ffcc00; --peach: #ffcc99; --red: #cc3333; --dark: #000; --gray: #1a1a1a; --font: 'Antonio', sans-serif; }
+        :root {
+            --orange: #ff9900;
+            --purple: #cc99cc;
+            --blue: #99ccff;
+            --yellow: #ffcc00;
+            --peach: #ffcc99;
+            --red: #cc3333;
+            --dark: #000000;
+            --gray: #1a1a1a;
+            --font: 'Antonio', sans-serif;
+        }
         body { background: var(--dark); color: #fff; font-family: var(--font); margin: 0; padding: 12px; display: flex; flex-direction: column; align-items: center; }
-        .lcars-box { width: 870px; display: flex; flex-direction: column; gap: 10px; }
+        .lcars-box { width: 880px; display: flex; flex-direction: column; gap: 10px; }
+        
+        /* Subspace Utility Bar */
         .bar { background: var(--gray); border: 2px solid var(--orange); border-radius: 18px; padding: 6px 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
         .bar label { font-size: 9.5pt; color: var(--orange); font-weight: bold; }
         .bar input { flex-grow: 1; background: #000; border: 1px solid var(--blue); color: var(--blue); padding: 4px 8px; font-family: var(--font); border-radius: 4px; }
+        
+        /* Header Block */
         .hdr { display: flex; justify-content: space-between; align-items: center; background: var(--orange); color: #000; border-radius: 20px 20px 0 0; padding: 6px 20px; font-weight: bold; }
+        
+        /* Station Navigation Tabs */
+        .station-nav { display: flex; gap: 6px; background: var(--gray); padding: 6px 10px; border-radius: 8px; border: 1px solid var(--orange); }
+        .tab-btn { flex: 1; background: #222; color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 6px 4px; font-family: var(--font); font-size: 11pt; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.15s; text-align: center; }
+        .tab-btn:hover { background: #333; }
+        .tab-btn.active.tab-overview { background: var(--orange); color: #000; border-color: var(--orange); }
+        .tab-btn.active.tab-helm { background: var(--yellow); color: #000; border-color: var(--yellow); }
+        .tab-btn.active.tab-tactical { background: var(--red); color: #fff; border-color: var(--red); }
+        .tab-btn.active.tab-science { background: var(--blue); color: #000; border-color: var(--blue); }
+        .tab-btn.active.tab-engineering { background: var(--peach); color: #000; border-color: var(--peach); }
+        .tab-btn.active.tab-command { background: var(--purple); color: #000; border-color: var(--purple); }
+
+        /* Panels & Stations */
+        .tab-content { display: none; flex-direction: column; gap: 10px; }
+        .tab-content.active { display: flex; }
         .pnl { border: 2px solid var(--orange); border-radius: 8px; padding: 10px 12px; position: relative; background: rgba(25,25,25,0.75); }
-        .pnl.blue { border-color: var(--blue); } .pnl.yellow { border-color: var(--yellow); } .pnl.purple { border-color: var(--purple); }
+        .pnl.blue { border-color: var(--blue); } 
+        .pnl.yellow { border-color: var(--yellow); } 
+        .pnl.purple { border-color: var(--purple); }
+        .pnl.red { border-color: var(--red); }
+        .pnl.peach { border-color: var(--peach); }
+
         .title { position: absolute; top: -9px; left: 14px; background: var(--dark); padding: 0 6px; font-weight: bold; font-size: 9.5pt; letter-spacing: 1px; color: var(--orange); }
-        .blue .title { color: var(--blue); } .yellow .title { color: var(--yellow); } .purple .title { color: var(--purple); }
+        .blue .title { color: var(--blue); } .yellow .title { color: var(--yellow); } .purple .title { color: var(--purple); } .red .title { color: var(--red); } .peach .title { color: var(--peach); }
+
         input[type="text"], input[type="number"], textarea { width: 100%; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.3); color: #fff; font-family: var(--font); font-size: 10.5pt; padding: 2px 0; box-sizing: border-box; text-transform: uppercase; }
         input:focus, textarea:focus { outline: none; border-bottom-color: var(--blue); }
-        textarea { resize: vertical; min-height: 48px; text-transform: none; }
+        textarea { resize: vertical; min-height: 55px; text-transform: none; }
         label { display: block; font-size: 8pt; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-top: 4px; }
+
+        /* Buttons */
         .btn { background: var(--orange); color: #000; border: none; border-radius: 10px; padding: 3px 8px; font-family: var(--font); font-weight: bold; font-size: 9pt; cursor: pointer; text-transform: uppercase; }
-        .btn.blue { background: var(--blue); } .btn.yellow { background: var(--yellow); } .btn.purple { background: var(--purple); }
+        .btn.blue { background: var(--blue); } .btn.yellow { background: var(--yellow); } .btn.purple { background: var(--purple); } .btn.red { background: var(--red); color: #fff; } .btn.peach { background: var(--peach); }
+
+        /* Grids & Cards */
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px; display: flex; flex-direction: column; gap: 4px; }
         .stress-row { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
-        .stress-row input[type="checkbox"] { appearance: none; width: 20px; height: 18px; border: 2px solid var(--orange); border-radius: 3px; cursor: pointer; }
+        .stress-row input[type="checkbox"] { appearance: none; width: 22px; height: 18px; border: 2px solid var(--orange); border-radius: 3px; cursor: pointer; }
         .stress-row input[type="checkbox"]:checked { background: var(--orange); }
-        .card { background: rgba(255,153,0,0.06); border: 1px solid rgba(255,153,0,0.25); border-radius: 6px; padding: 6px; display: flex; flex-direction: column; gap: 3px; }
-        .schematic-box { border: 2px dashed var(--orange); background: rgba(0,0,0,0.6); border-radius: 8px; height: 125px; display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; overflow: hidden; }
+
+        /* Schematic Image Viewer */
+        .schematic-box { border: 2px dashed var(--orange); background: rgba(0,0,0,0.6); border-radius: 8px; height: 135px; display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; overflow: hidden; }
         .schematic-box:hover { border-color: var(--yellow); background: rgba(255,204,0,0.05); }
         .schematic-box img { width: 100%; height: 100%; object-fit: contain; display: none; }
         .schematic-prompt { text-align: center; color: var(--orange); font-size: 9pt; letter-spacing: 1px; pointer-events: none; }
         .clear-btn { position: absolute; top: 4px; right: 4px; background: rgba(204,51,51,0.85); color: #fff; border: none; border-radius: 4px; font-size: 7.5pt; font-weight: bold; padding: 2px 6px; display: none; cursor: pointer; font-family: var(--font); }
+        .station-memo { font-size: 8pt; color: var(--yellow); letter-spacing: 0.5px; border-left: 2px solid var(--yellow); padding-left: 6px; margin: 4px 0 8px 0; }
     </style>
 </head>
 <body>
 <div class="lcars-box">
+    <!-- Top Utility Bar -->
     <div class="bar">
         <label for="webhook">SUBSPACE RELAY:</label>
         <input type="password" id="webhook" placeholder="Discord Webhook URL..." onchange="saveHook()">
@@ -51,120 +94,292 @@
         <span id="comm-st" style="font-size: 9.5pt; color: var(--yellow); margin-left: auto;">READY</span>
     </div>
 
+    <!-- Header Block -->
     <header class="hdr">
-        <span style="font-size: 16pt; letter-spacing: 1.5px;">MASTER SYSTEMS DISPLAY // PRIMARY VESSEL</span>
-        <span style="font-size: 9.5pt;">PROTOTYPE DREADNOUGHT INTERFACE</span>
+        <span style="font-size: 16pt; letter-spacing: 1.5px;">PRIMARY STARSHIP CONSOLE // U.S.S. JOHN-HANCOCK</span>
+        <span style="font-size: 9.5pt;">GALAXY-X EXPERIMENTAL DREADNOUGHT</span>
     </header>
 
-    <section class="pnl">
-        <div class="title">VESSEL SPECIFICATIONS & SCHEMATIC</div>
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px;">
-            <div>
-                <div class="grid-2">
-                    <div><label>NAME</label><input type="text" id="name" value="U.S.S. JOHN-HANCOCK" oninput="save()"></div>
-                    <div><label>REGISTRY & CLASS</label><input type="text" id="class" value="N.C.C. - 75019 // GALAXY-X DREADNOUGHT" oninput="save()"></div>
-                    <div><label>COMMANDING OFFICER</label><input type="text" id="co" value="CADET CREW" oninput="save()"></div>
-                    <div><label>ASSIGNMENT</label><input type="text" id="role" value="EXPERIMENTAL FIELD EVALUATION" oninput="save()"></div>
+    <!-- Station Navigation Tabs -->
+    <nav class="station-nav">
+        <button class="tab-btn tab-overview active" onclick="switchStation('overview')">1. OVERVIEW & MSD</button>
+        <button class="tab-btn tab-helm" onclick="switchStation('helm')">2. HELM</button>
+        <button class="tab-btn tab-tactical" onclick="switchStation('tactical')">3. TACTICAL</button>
+        <button class="tab-btn tab-science" onclick="switchStation('science')">4. SCIENCE</button>
+        <button class="tab-btn tab-engineering" onclick="switchStation('engineering')">5. ENGINEERING</button>
+        <button class="tab-btn tab-command" onclick="switchStation('command')">6. COMMAND</button>
+    </nav>
+
+    <!-- ==================== TAB 1: OVERVIEW & STATUS ==================== -->
+    <div id="tab-overview" class="tab-content active">
+        <section class="pnl">
+            <div class="title">VESSEL SPECIFICATIONS & SCHEMATIC</div>
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px;">
+                <div>
+                    <div class="grid-2">
+                        <div><label>SHIP NAME</label><input type="text" id="name" value="U.S.S. JOHN-HANCOCK" oninput="save()"></div>
+                        <div><label>REGISTRY & CLASS</label><input type="text" id="class" value="N.C.C. - 75019 // GALAXY-X CLASS" oninput="save()"></div>
+                        <div><label>COMMANDING CADET</label><input type="text" id="co" value="CADET BRIDGE COMPLEMENT" oninput="save()"></div>
+                        <div><label>TACTICAL MISSION</label><input type="text" id="role" value="PROTOTYPE FIELD EVALUATION" oninput="save()"></div>
+                    </div>
+                    <div class="grid-4" style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed rgba(255,153,0,0.3);">
+                        <div><label>CODIE (POWER / SIZE)</label><input type="number" id="codie" value="12" oninput="save()"></div>
+                        <div><label>SaMS (AGILITY)</label><input type="number" id="sams" value="3" oninput="save()"></div>
+                        <div><label>SHIELD RATING</label><input type="number" id="s-rate" value="12" oninput="save()"></div>
+                        <div>
+                            <label>SHIELD STABILITY</label>
+                            <div style="display: flex; gap: 3px;">
+                                <input type="number" id="s-stab" value="6" oninput="save()">
+                                <button class="btn yellow" onclick="rollStab()">RAISE</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="grid-4" style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed rgba(255,153,0,0.3);">
-                    <div><label>CODIE (POWER)</label><input type="number" id="codie" value="12" oninput="save()"></div>
-                    <div><label>SaMS (AGILITY)</label><input type="number" id="sams" value="3" oninput="save()"></div>
-                    <div><label>SHIELD RATING</label><input type="number" id="s-rate" value="12" oninput="save()"></div>
-                    <div>
-                        <label>STABILITY</label>
-                        <div style="display: flex; gap: 3px;">
-                            <input type="number" id="s-stab" value="6" oninput="save()">
-                            <button class="btn yellow" onclick="rollStab()">RAISE</button>
+                <div>
+                    <label style="margin-top:0;">TACTICAL SCHEMATIC</label>
+                    <div class="schematic-box" id="s-box" onclick="triggerImg(event)">
+                        <img id="s-img" src="" alt="Schematic">
+                        <div id="s-txt" class="schematic-prompt"><div>📷 [ LOAD SCHEMATIC ]</div><div style="font-size: 7pt; color: var(--yellow);">CLICK TO SELECT IMAGE</div></div>
+                        <button class="clear-btn" id="s-clr" onclick="clearImg(event)">✕ REMOVE</button>
+                        <input type="file" id="img-in" accept="image/*" style="display:none;" onchange="loadImg(event)">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="grid-2">
+            <section class="pnl blue">
+                <div class="title">VESSEL CORE ASPECTS</div>
+                <label>HIGH CONCEPT</label><input type="text" id="hc" value="Prototype Galaxy-X Class Dreadnought" oninput="save()">
+                <label>TROUBLE</label><input type="text" id="tr" value="Volatile Prototype Power Management Grid" oninput="save()">
+                <label>SPINAL WEAPON ASPECT</label><input type="text" id="a3" value="Ventral Spinal Phaser Lance (Weapon: 10)" oninput="save()">
+                <label>ENGINEERING ASPECT</label><input type="text" id="a4" value="Third Dorsal Nacelle Auxiliary Power Tap" oninput="save()">
+            </section>
+
+            <section class="pnl purple">
+                <div class="title">HULL INTEGRITY & CONSEQUENCES</div>
+                <label>HULL STRESS (12 BOXES - CODIE CAP)</label>
+                <div class="stress-row">
+                    <label><input type="checkbox" id="hs-1" onchange="onBox()"> 1</label>
+                    <label><input type="checkbox" id="hs-2" onchange="onBox()"> 2</label>
+                    <label><input type="checkbox" id="hs-3" onchange="onBox()"> 3</label>
+                    <label><input type="checkbox" id="hs-4" onchange="onBox()"> 4</label>
+                    <label><input type="checkbox" id="hs-5" onchange="onBox()"> 5</label>
+                    <label><input type="checkbox" id="hs-6" onchange="onBox()"> 6</label>
+                    <label><input type="checkbox" id="hs-7" onchange="onBox()"> 7</label>
+                    <label><input type="checkbox" id="hs-8" onchange="onBox()"> 8</label>
+                    <label><input type="checkbox" id="hs-9" onchange="onBox()"> 9</label>
+                    <label><input type="checkbox" id="hs-10" onchange="onBox()"> 10</label>
+                    <label><input type="checkbox" id="hs-11" onchange="onBox()"> 11</label>
+                    <label><input type="checkbox" id="hs-12" onchange="onBox()"> 12</label>
+                </div>
+                <label>MILD (-2)</label><input type="text" id="c-mild" placeholder="e.g. EPS Conduit Flare" oninput="save()">
+                <label>MODERATE (-4)</label><input type="text" id="c-mod" placeholder="e.g. Lance Capacitor Overheated" oninput="save()">
+                <label>SEVERE (-6)</label><input type="text" id="c-sev" placeholder="e.g. Warp Core Containment Breach" oninput="save()">
+            </section>
+        </div>
+    </div>
+
+    <!-- ==================== TAB 2: HELM STATION ==================== -->
+    <div id="tab-helm" class="tab-content">
+        <section class="pnl yellow">
+            <div class="title">HELM CONSOLE // FLIGHT DYNAMICS & SaMS EVASION</div>
+            <div class="station-memo">RULE OF THUMB: Helm actions use Piloting and are capped by the ship's SaMS rating (3) unless an outside Aspect or Boost is invoked.</div>
+            <div class="grid-3">
+                <div class="card">
+                    <span style="color: var(--yellow); font-weight: bold; font-size: 9pt;">EVASIVE MANEUVERS (ACTIVE DEFENSE)</span>
+                    <label>ACTION NAME</label><input type="text" id="helm-act-1" value="Evasive Pattern Alpha (+3)" oninput="save()">
+                    <div style="display: flex; gap: 4px; align-items: center; margin-top: 4px;">
+                        <label style="margin:0;">PILOTING:</label><input type="number" id="helm-mod-1" value="3" style="width: 35px; text-align: center;">
+                        <button class="btn yellow" onclick="rollSt('helm-act-1', 'helm-mod-1', 'Evasive Maneuver')">EVADE</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <span style="color: var(--yellow); font-weight: bold; font-size: 9pt;">CLOSE DISTANCE / GAIN POSITION</span>
+                    <label>ACTION NAME</label><input type="text" id="helm-act-2" value="Vector Intercept Delta (+3)" oninput="save()">
+                    <div style="display: flex; gap: 4px; align-items: center; margin-top: 4px;">
+                        <label style="margin:0;">RATING:</label><input type="number" id="helm-mod-2" value="3" style="width: 35px; text-align: center;">
+                        <button class="btn yellow" onclick="rollSt('helm-act-2', 'helm-mod-2', 'Close Distance')">MANEUVER</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <span style="color: var(--yellow); font-weight: bold; font-size: 9pt;">SLINGSHOT / ASTEROID THREADING</span>
+                    <label>ACTION NAME</label><input type="text" id="helm-act-3" value="Terrain Screen Maneuver (+3)" oninput="save()">
+                    <div style="display: flex; gap: 4px; align-items: center; margin-top: 4px;">
+                        <label style="margin:0;">RATING:</label><input type="number" id="helm-mod-3" value="3" style="width: 35px; text-align: center;">
+                        <button class="btn yellow" onclick="rollSt('helm-act-3', 'helm-mod-3', 'Precision Maneuver')">ENGAGE</button>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 10px;">
+                <label>HELM PROTOCOLS & PILOT NOTES</label>
+                <textarea id="helm-notes" oninput="save()" placeholder="• Galaxy-X Mass: Turning radius is sluggish (SaMS 3). Prioritize lining up the ventral lance over dogfighting."></textarea>
+            </div>
+        </section>
+    </div>
+
+    <!-- ==================== TAB 3: TACTICAL STATION ==================== -->
+    <div id="tab-tactical" class="tab-content">
+        <section class="pnl red">
+            <div class="title">TACTICAL CONSOLE // WEAPONS ARRAYS & TARGETING</div>
+            <div class="station-memo">RULE OF THUMB: Tactical actions use Weapons/Security, capped by CODIE (12). Boosts from Science and Helm can break this cap.</div>
+            <div class="grid-3">
+                <div class="card" style="border-color: var(--red);">
+                    <span style="color: var(--red); font-weight: bold; font-size: 9pt;">SPINAL PHASER LANCE (WR: 10)</span>
+                    <label>LANCE FIRING CHECK</label><input type="text" id="tac-act-1" value="Spinal Phaser Lance Volley (+4)" oninput="save()">
+                    <div style="display: flex; gap: 4px; align-items: center; margin-top: 4px;">
+                        <label style="margin:0;">RATING:</label><input type="number" id="tac-mod-1" value="4" style="width: 35px; text-align: center;">
+                        <button class="btn red" onclick="rollSt('tac-act-1', 'tac-mod-1', 'Spinal Lance Discharge')">DISCHARGE</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <span style="color: var(--orange); font-weight: bold; font-size: 9pt;">TYPE-X PHASER SPREAD (+2 HIT)</span>
+                    <label>ARRAY VOLLEY</label><input type="text" id="tac-act-2" value="Saucer Array Broadside (+4)" oninput="save()">
+                    <div style="display: flex; gap: 4px; align-items: center; margin-top: 4px;">
+                        <label style="margin:0;">RATING:</label><input type="number" id="tac-mod-2" value="4" style="width: 35px; text-align: center;">
+                        <button class="btn orange" onclick="rollSt('tac-act-2', 'tac-mod-2', 'Phaser Broadside')">FIRE</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <span style="color: var(--orange); font-weight: bold; font-size: 9pt;">PHOTON TORPEDO SALVO (WR: 6)</span>
+                    <label>TORPEDO SALVO</label><input type="text" id="tac-act-3" value="Forward Torpedo Spread (+3)" oninput="save()">
+                    <div style="display: flex; gap: 4px; align-items: center; margin-top: 4px;">
+                        <label style="margin:0;">RATING:</label><input type="number" id="tac-mod-3" value="3" style="width: 35px; text-align: center;">
+                        <button class="btn orange" onclick="rollSt('tac-act-3', 'tac-mod-3', 'Torpedo Launch')">SALVO</button>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 10px;">
+                <label>TACTICAL STUNTS & TARGETING ORDERS</label>
+                <textarea id="tac-notes" oninput="save()" placeholder="• Spinal Lance Drawback: Requires an Engineering check prior to firing or triggers a Power Brownout (-2 to SaMS).&#10;• Target Subsystems: Declare targets (Engines/Weapons) before rolling to force subsystem consequences."></textarea>
+            </div>
+        </section>
+    </div>
+
+    <!-- ==================== TAB 4: SCIENCE STATION ==================== -->
+    <div id="tab-science" class="tab-content">
+        <section class="pnl blue">
+            <div class="title">SCIENCE CONSOLE // SENSORS & INFORMATION ENERGY</div>
+            <div class="station-memo">RULE OF THUMB: Science Officer rolls Investigation/Notice against enemy Shield Stability to create Targeting Locks (+2 Boosts).</div>
+            <div class="grid-3">
+                <div class="card">
+                    <span style="color: var(--blue); font-weight: bold; font-size: 9pt;">SCAN SHIELD HARMONICS</span>
+                    <label>SENSOR SWEEP</label><input type="text" id="sci-act-1" value="Harmonic Shield Analysis (+4)" oninput="save()">
+                    <div style="display: flex; gap: 4px; align-items: center; margin-top: 4px;">
+                        <label style="margin:0;">RATING:</label><input type="number" id="sci-mod-1" value="4" style="width: 35px; text-align: center;">
+                        <button class="btn blue" onclick="rollSt('sci-act-1', 'sci-mod-1', 'Harmonic Scan')">SCAN</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <span style="color: var(--blue); font-weight: bold; font-size: 9pt;">TARGETING LOCK (CREATE ADVANTAGE)</span>
+                    <label>LOCK CALIBRATION</label><input type="text" id="sci-act-2" value="Active Targeting Lock-On (+4)" oninput="save()">
+                    <div style="display: flex; gap: 4px; align-items: center; margin-top: 4px;">
+                        <label style="margin:0;">RATING:</label><input type="number" id="sci-mod-2" value="4" style="width: 35px; text-align: center;">
+                        <button class="btn blue" onclick="rollSt('sci-act-2', 'sci-mod-2', 'Target Lock')">LOCK</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <span style="color: var(--blue); font-weight: bold; font-size: 9pt;">ELECTRONIC COUNTERMEASURES</span>
+                    <label>JAMMING BEAM</label><input type="text" id="sci-act-3" value="Sensor Jamming Sweep (+3)" oninput="save()">
+                    <div style="display: flex; gap: 4px; align-items: center; margin-top: 4px;">
+                        <label style="margin:0;">RATING:</label><input type="number" id="sci-mod-3" value="3" style="width: 35px; text-align: center;">
+                        <button class="btn blue" onclick="rollSt('sci-act-3', 'sci-mod-3', 'Countermeasures')">JAM</button>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 10px;">
+                <label>SCIENCE PROTOCOLS & TARGET TELEMETRY</label>
+                <textarea id="sci-notes" oninput="save()" placeholder="• Sensor Range: Base range is 11 zones. Extended scanning up to 22 zones incurs a -2 penalty.&#10;• Spotter Protocol: Successful scans paint targets with the 'Shield Gap Discovered' boost for Tactical."></textarea>
+            </div>
+        </section>
+    </div>
+
+    <!-- ==================== TAB 5: ENGINEERING STATION ==================== -->
+    <div id="tab-engineering" class="tab-content">
+        <section class="pnl peach">
+            <div class="title">ENGINEERING CONSOLE // POWER MATRIX & DAMAGE CONTROL</div>
+            <div class="station-memo">RULE OF THUMB: Engineer sets Shield Stability at the start of battle (4dF + Engineering). Can shunt power between systems.</div>
+            <div class="grid-3">
+                <div class="card">
+                    <span style="color: var(--peach); font-weight: bold; font-size: 9pt;">RAISE / RESTORE SHIELDS</span>
+                    <label>DYNAMIC STABILITY CHECK</label><input type="text" id="eng-act-1" value="Calibrate Shield Harmonic (+4)" oninput="save()">
+                    <div style="display: flex; gap: 4px; align-items: center; margin-top: 4px;">
+                        <label style="margin:0;">ENGINEERING:</label><input type="number" id="eng-mod-1" value="4" style="width: 35px; text-align: center;">
+                        <button class="btn peach" onclick="rollStab()">SET STAB</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <span style="color: var(--peach); font-weight: bold; font-size: 9pt;">REROUTE POWER (EPS SHUNT)</span>
+                    <label>POWER DIVERSION</label><input type="text" id="eng-act-2" value="Shunt Power to Weapons (+4)" oninput="save()">
+                    <div style="display: flex; gap: 4px; align-items: center; margin-top: 4px;">
+                        <label style="margin:0;">RATING:</label><input type="number" id="eng-mod-2" value="4" style="width: 35px; text-align: center;">
+                        <button class="btn peach" onclick="rollSt('eng-act-2', 'eng-mod-2', 'Power Shunt')">SHUNT</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <span style="color: var(--peach); font-weight: bold; font-size: 9pt;">EMERGENCY DAMAGE CONTROL</span>
+                    <label>REPAIR ACTION</label><input type="text" id="eng-act-3" value="Emergency Bulkhead Seal (+4)" oninput="save()">
+                    <div style="display: flex; gap: 4px; align-items: center; margin-top: 4px;">
+                        <label style="margin:0;">RATING:</label><input type="number" id="eng-mod-3" value="4" style="width: 35px; text-align: center;">
+                        <button class="btn peach" onclick="rollSt('eng-act-3', 'eng-mod-3', 'Damage Control')">REPAIR</button>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 10px;">
+                <label>WARP CORE & COOLANT RESERVES</label>
+                <textarea id="eng-notes" oninput="save()" placeholder="• Lance Power Management: Must make Engineering check when Spinal Lance fires to prevent core brownout.&#10;• Power Shunt Trade: Take -1 from Sensors/Engines to grant +1 to Shields or Weapons for 1 round."></textarea>
+            </div>
+        </section>
+    </div>
+
+    <!-- ==================== TAB 6: COMMAND STATION ==================== -->
+    <div id="tab-command" class="tab-content">
+        <section class="pnl purple">
+            <div class="title">COMMAND CONSOLE // ORDERS, INSPIRATION & FATE POINTS</div>
+            <div class="station-memo">RULE OF THUMB: Captain coordinates the bridge, grants crew boosts with orders, and recovers team morale.</div>
+            <div class="grid-3">
+                <div class="card">
+                    <span style="color: var(--purple); font-weight: bold; font-size: 9pt;">CAPTAIN'S ORDER (COMMAND AUTHORITY)</span>
+                    <label>TACTICAL DIRECTIVE</label><input type="text" id="cmd-act-1" value="'All Hands, Fire on My Mark!' (+3)" oninput="save()">
+                    <div style="display: flex; gap: 4px; align-items: center; margin-top: 4px;">
+                        <label style="margin:0;">RAPPORT:</label><input type="number" id="cmd-mod-1" value="3" style="width: 35px; text-align: center;">
+                        <button class="btn purple" onclick="rollSt('cmd-act-1', 'cmd-mod-1', 'Captain Order')">COMMAND</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <span style="color: var(--purple); font-weight: bold; font-size: 9pt;">TACTICAL COORDINATION</span>
+                    <label>COOPERATIVE OVERCOME</label><input type="text" id="cmd-act-2" value="Coordinated Bridge Salvo (+3)" oninput="save()">
+                    <div style="display: flex; gap: 4px; align-items: center; margin-top: 4px;">
+                        <label style="margin:0;">RATING:</label><input type="number" id="cmd-mod-2" value="3" style="width: 35px; text-align: center;">
+                        <button class="btn purple" onclick="rollSt('cmd-act-2', 'cmd-mod-2', 'Tactical Coordination')">COORDINATE</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <span style="color: var(--purple); font-weight: bold; font-size: 9pt;">FATE POINTS POOL</span>
+                    <div style="display: flex; justify-content: space-around; align-items: center; margin-top: 6px;">
+                        <div style="text-align: center;">
+                            <label>REFRESH</label>
+                            <input type="number" id="fp-refresh" value="3" style="width: 45px; text-align: center; font-size: 14pt;" oninput="save()">
+                        </div>
+                        <div style="text-align: center;">
+                            <label>CURRENT FP</label>
+                            <input type="number" id="fp-current" value="3" style="width: 45px; text-align: center; font-size: 14pt;" oninput="save()">
                         </div>
                     </div>
                 </div>
             </div>
-            <div>
-                <label style="margin-top:0;">TACTICAL SCHEMATIC</label>
-                <div class="schematic-box" id="s-box" onclick="triggerImg(event)">
-                    <img id="s-img" src="" alt="Schematic">
-                    <div id="s-txt" class="schematic-prompt"><div>📷 [ LOAD SCHEMATIC ]</div><div style="font-size: 7pt; color: var(--yellow);">CLICK TO SELECT IMAGE</div></div>
-                    <button class="clear-btn" id="s-clr" onclick="clearImg(event)">✕ REMOVE</button>
-                    <input type="file" id="img-in" accept="image/*" style="display:none;" onchange="loadImg(event)">
-                </div>
+            <div style="margin-top: 10px;">
+                <label>COMMAND LOG & FLEET DIRECTIVES</label>
+                <textarea id="cmd-notes" oninput="save()" placeholder="• Spend 1 FP: Issue direct command giving any officer a +2 boost on their action this exchange.&#10;• Coordinate Action: Use Rapport or Presence to clear 'Panic' or mental stress from bridge cadets."></textarea>
             </div>
-        </div>
-    </section>
-
-    <section class="pnl yellow">
-        <div class="title">BRIDGE STATIONS (CLICK TO ROLL)</div>
-        <div class="grid-3">
-            <div class="card">
-                <span style="color: var(--red); font-weight: bold; font-size: 8.5pt;">SPINAL PHASER LANCE (WR: 10)</span>
-                <input type="text" id="act-lance" value="Spinal Lance (+4)" oninput="save()">
-                <div style="display: flex; gap: 4px; align-items: center;"><label style="margin:0;">RATING:</label><input type="number" id="mod-lance" value="4" style="width:35px; text-align:center;"><button class="btn" onclick="rollSt('act-lance', 'mod-lance', 'Spinal Lance')">FIRE</button></div>
-            </div>
-            <div class="card">
-                <span style="color: var(--orange); font-weight: bold; font-size: 8.5pt;">TACTICAL (TYPE-X PHASERS)</span>
-                <input type="text" id="act-tac" value="Phaser Array Volley (+3)" oninput="save()">
-                <div style="display: flex; gap: 4px; align-items: center;"><label style="margin:0;">RATING:</label><input type="number" id="mod-tac" value="3" style="width:35px; text-align:center;"><button class="btn orange" onclick="rollSt('act-tac', 'mod-tac', 'Phaser Volley')">FIRE</button></div>
-            </div>
-            <div class="card">
-                <span style="color: var(--yellow); font-weight: bold; font-size: 8.5pt;">HELM (SaMS / EVASION)</span>
-                <input type="text" id="act-helm" value="Evasive Maneuvers (+3)" oninput="save()">
-                <div style="display: flex; gap: 4px; align-items: center;"><label style="margin:0;">RATING:</label><input type="number" id="mod-helm" value="3" style="width:35px; text-align:center;"><button class="btn yellow" onclick="rollSt('act-helm', 'mod-helm', 'Evasive Maneuver')">EVADE</button></div>
-            </div>
-            <div class="card">
-                <span style="color: var(--blue); font-weight: bold; font-size: 8.5pt;">SCIENCE (SENSOR SCAN)</span>
-                <input type="text" id="act-sci" value="Harmonic Target Scan (+4)" oninput="save()">
-                <div style="display: flex; gap: 4px; align-items: center;"><label style="margin:0;">RATING:</label><input type="number" id="mod-sci" value="4" style="width:35px; text-align:center;"><button class="btn blue" onclick="rollSt('act-sci', 'mod-sci', 'Sensor Scan')">SCAN</button></div>
-            </div>
-            <div class="card">
-                <span style="color: var(--purple); font-weight: bold; font-size: 8.5pt;">ENGINEERING (POWER MANAGEMENT)</span>
-                <input type="text" id="act-eng" value="Third Nacelle Power Tap (+4)" oninput="save()">
-                <div style="display: flex; gap: 4px; align-items: center;"><label style="margin:0;">RATING:</label><input type="number" id="mod-eng" value="4" style="width:35px; text-align:center;"><button class="btn purple" onclick="rollSt('act-eng', 'mod-eng', 'Power Management')">REROUTE</button></div>
-            </div>
-            <div class="card">
-                <span style="color: #fff; font-weight: bold; font-size: 8.5pt;">COMMAND (ORDERS)</span>
-                <input type="text" id="act-cmd" value="Tactical Command Order (+3)" oninput="save()">
-                <div style="display: flex; gap: 4px; align-items: center;"><label style="margin:0;">RATING:</label><input type="number" id="mod-cmd" value="3" style="width:35px; text-align:center;"><button class="btn" onclick="rollSt('act-cmd', 'mod-cmd', 'Command Order')">ORDER</button></div>
-            </div>
-        </div>
-    </section>
-
-    <div class="grid-2">
-        <section class="pnl blue">
-            <div class="title">VESSEL ASPECTS & PROTOCOLS</div>
-            <label>HIGH CONCEPT</label><input type="text" id="hc" value="Prototype Galaxy-X Class Dreadnought" oninput="save()">
-            <label>TROUBLE</label><input type="text" id="tr" value="Volatile Prototype Power Management Grid" oninput="save()">
-            <label>TACTICAL WEAPON ASPECT</label><input type="text" id="a3" value="Spinal Phaser Lance (Weapon Rating 10)" oninput="save()">
-            <label>ENGINEERING ASPECT</label><input type="text" id="a4" value="Third Dorsal Nacelle Auxiliary Plasma Tap" oninput="save()">
-        </section>
-
-        <section class="pnl purple">
-            <div class="title">HULL INTEGRITY (12 BOXES - CODIE CAP)</div>
-            <div class="stress-row">
-                <label><input type="checkbox" id="hs-1" onchange="onBox()"> 1</label>
-                <label><input type="checkbox" id="hs-2" onchange="onBox()"> 2</label>
-                <label><input type="checkbox" id="hs-3" onchange="onBox()"> 3</label>
-                <label><input type="checkbox" id="hs-4" onchange="onBox()"> 4</label>
-                <label><input type="checkbox" id="hs-5" onchange="onBox()"> 5</label>
-                <label><input type="checkbox" id="hs-6" onchange="onBox()"> 6</label>
-                <label><input type="checkbox" id="hs-7" onchange="onBox()"> 7</label>
-                <label><input type="checkbox" id="hs-8" onchange="onBox()"> 8</label>
-                <label><input type="checkbox" id="hs-9" onchange="onBox()"> 9</label>
-                <label><input type="checkbox" id="hs-10" onchange="onBox()"> 10</label>
-                <label><input type="checkbox" id="hs-11" onchange="onBox()"> 11</label>
-                <label><input type="checkbox" id="hs-12" onchange="onBox()"> 12</label>
-            </div>
-            <label>MILD (-2)</label><input type="text" id="c-mild" placeholder="e.g. EPS Conduit Flare" oninput="save()">
-            <label>MODERATE (-4)</label><input type="text" id="c-mod" placeholder="e.g. Lance Capacitor Overheat" oninput="save()">
-            <label>SEVERE (-6)</label><input type="text" id="c-sev" placeholder="e.g. Core Containment Breach" oninput="save()">
         </section>
     </div>
-
-    <section class="pnl">
-        <div class="title">STARSHIP STUNTS & SPECIAL RULES</div>
-        <textarea id="stunts" oninput="save()" placeholder="• Spinal Lance (-2): Weapon Rating 10. Requires Engineering check to avoid temporary Power Brownout.&#10;• Third Nacelle Power Tap (-1): +2 to Engineering Reroute Power actions shunting to weapons/shields."></textarea>
-    </section>
 </div>
 
 <script>
+    // =========================================================================
+    // LCARS ACOUSTIC ENGINE (NO TYPING SOUNDS)
+    // =========================================================================
     let actx=null, audOn=true;
     function getA() { if(!actx) actx=new(window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); return actx; }
     function toggleAud() { audOn=!audOn; document.getElementById('aud-btn').textContent = audOn ? "AUDIO: ON" : "AUDIO: OFF"; }
@@ -173,11 +388,41 @@
     function rollAudio() { if(!audOn) return; let c=getA(), now=c.currentTime, o=c.createOscillator(), g=c.createGain(); o.type='sine'; o.frequency.setValueAtTime(1046, now); o.frequency.setValueAtTime(1480, now+0.04); g.gain.setValueAtTime(0.12, now); g.gain.exponentialRampToValueAtTime(0.0001, now+0.12); o.connect(g); g.connect(c.destination); o.start(now); o.stop(now+0.12); }
     function onBox() { pip(); save(); }
 
+    // =========================================================================
+    // STATION TAB CONTROLLER
+    // =========================================================================
+    function switchStation(stationName) {
+        pip();
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        
+        const targetBtn = document.querySelector(`.tab-btn.tab-${stationName}`);
+        const targetTab = document.getElementById(`tab-${stationName}`);
+        
+        if (targetBtn && targetTab) {
+            targetBtn.classList.add('active');
+            targetTab.classList.add('active');
+        }
+    }
+
+    // =========================================================================
+    // SCHEMATIC IMAGE FILE PICKER
+    // =========================================================================
     function triggerImg(e) { if(e.target.id==='s-clr') return; pip(); document.getElementById('img-in').click(); }
     function loadImg(e) { let f=e.target.files[0]; if(!f) return; let r=new FileReader(); r.onload=ev=>{ showImg(ev.target.result); save(); chime(); }; r.readAsDataURL(f); }
-    function showImg(url) { let img=document.getElementById('s-img'), txt=document.getElementById('s-txt'), clr=document.getElementById('s-clr'), b=document.getElementById('s-box'); if(url && url.startsWith('data:image')){ img.src=url; img.style.display='block'; txt.style.display='none'; clr.style.display='block'; b.style.borderStyle='solid'; } else { img.src=''; img.style.display='none'; txt.style.display='block'; clr.style.display='none'; b.style.borderStyle='dashed'; } }
+    function showImg(url) { 
+        let img=document.getElementById('s-img'), txt=document.getElementById('s-txt'), clr=document.getElementById('s-clr'), b=document.getElementById('s-box'); 
+        if(url && url.startsWith('data:image')){ 
+            img.src=url; img.style.display='block'; txt.style.display='none'; clr.style.display='block'; b.style.borderStyle='solid'; 
+        } else { 
+            img.src=''; img.style.display='none'; txt.style.display='block'; clr.style.display='none'; b.style.borderStyle='dashed'; 
+        } 
+    }
     function clearImg(e) { e.stopPropagation(); pip(); showImg(''); document.getElementById('img-in').value=''; save(); }
 
+    // =========================================================================
+    // FATE CORE 4dF DICE & DISCORD TELEMETRY
+    // =========================================================================
     function getLad(v) { const l=["Abysmal","Terrible","Poor","Mediocre","Average","Fair","Good","Great","Superb","Fantastic","Epic","Legendary"]; return v<-2?`Abysmal (${v})`:(v>8?`Legendary (+${v})`:`${l[v+2]} (${v>=0?'+'+v:v})`); }
     function roll4dF() { const f=[-1,0,1], sym={"-1":"−","0":" ","1":"+"}; let raw=[], sum=0; for(let i=0;i<4;i++){ let r=f[Math.floor(Math.random()*3)]; raw.push(r); sum+=r; } return { raw, sum, sym }; }
 
@@ -186,21 +431,24 @@
         if(!url.startsWith('http')) { alert("Enter valid Discord Webhook URL."); return; }
         const ship=document.getElementById('name').value.trim()||"Player Vessel", dice=roll4dF(), tot=dice.sum+mod;
         const box=`\`\`\`text\n${dice.raw.map(()=>"┌───┐").join(" ")}\n${dice.raw.map(r=>`│ ${dice.sym[r]} │`).join(" ")}\n${dice.raw.map(()=>"└───┘").join(" ")}\n\`\`\``;
-        const payload = { username: `🚀 ${ship}`, embeds: [{ title: `ACTION // ${action.toUpperCase()}`, description: `${box}\n**Dice:** \`${dice.sum>=0?'+'+dice.sum:dice.sum}\` | **Rating:** \`${mod>=0?'+'+mod:mod}\` | **Total:** \`${tot>=0?'+'+tot:tot}\``, color: 16750848, fields:[{ name:"EVALUATION", value:`>>> ### ❖ ${getLad(tot).toUpperCase()}` }] }] };
+        const payload = { username: `🚀 ${ship}`, embeds: [{ title: `BRIDGE ACTION // ${action.toUpperCase()}`, description: `${box}\n**Dice:** \`${dice.sum>=0?'+'+dice.sum:dice.sum}\` | **Station Rating:** \`${mod>=0?'+'+mod:mod}\` | **Total Shifts:** \`${tot>=0?'+'+tot:tot}\``, color: 16750848, fields:[{ name:"TACTICAL EVALUATION", value:`>>> ### ❖ ${getLad(tot).toUpperCase()}` }] }] };
         st.textContent="TRANSMITTING...";
         try { let r=await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}); if(r.ok){ chime(); st.textContent="TRANSMITTED"; setTimeout(()=>st.textContent="READY",2500); } } catch(e){ st.textContent="FAILED"; }
     }
     function rollSt(lid, mid, fb) { sendDiscord(document.getElementById(lid).value.trim()||fb, parseInt(document.getElementById(mid).value,10)||0); }
-    function rollStab() { let mod=parseInt(document.getElementById('mod-eng').value,10)||4, d=roll4dF(), st=Math.max(2, d.sum+mod); document.getElementById('s-stab').value=st; save(); sendDiscord(`Shields Raised // Stability Set to ${st}`, mod); }
+    function rollStab() { let mod=parseInt(document.getElementById('eng-mod-1').value,10)||4, d=roll4dF(), st=Math.max(2, d.sum+mod); document.getElementById('s-stab').value=st; save(); sendDiscord(`Shields Raised // Dynamic Stability Set to ${st}`, mod); }
 
     async function broadcast() {
         rollAudio(); const url=document.getElementById('webhook').value.trim(); if(!url.startsWith('http')) { alert("Enter Webhook URL."); return; }
         const n=document.getElementById('name').value, c=document.getElementById('class').value, cd=document.getElementById('codie').value, sm=document.getElementById('sams').value, sr=document.getElementById('s-rate').value, ss=document.getElementById('s-stab').value;
         const hs=[1,2,3,4,5,6,7,8,9,10,11,12].map(i=>document.getElementById(`hs-${i}`).checked?'[X]':'[ ]').join(' ');
-        const payload = { username: `MSD // ${n}`, embeds: [{ title: `📋 STARSHIP STATUS: ${n} (${c})`, description: `**CODIE:** ${cd} | **SaMS:** ${sm}\n**Shield Stability:** ${ss} | **Shield Rating:** ${sr}`, color: 16750848, fields:[{ name:"Hull Stress (1-12)", value:`\`${hs}\``, inline:false }, { name:"Consequences", value:`**Mild:** ${document.getElementById('c-mild').value||'None'}\n**Mod:** ${document.getElementById('c-mod').value||'None'}\n**Sev:** ${document.getElementById('c-sev').value||'None'}`, inline:false }] }] };
+        const payload = { username: `MSD TELEMETRY // ${n}`, embeds: [{ title: `📋 STARSHIP STATUS: ${n} (${c})`, description: `**CODIE:** ${cd} | **SaMS:** ${sm}\n**Shield Stability:** ${ss} (Floor) | **Shield Rating:** ${sr} (Cap)`, color: 16750848, fields:[{ name:"Hull Stress (1-12)", value:`\`${hs}\``, inline:false }, { name:"Consequences", value:`**Mild:** ${document.getElementById('c-mild').value||'None'}\n**Moderate:** ${document.getElementById('c-mod').value||'None'}\n**Severe:** ${document.getElementById('c-sev').value||'None'}`, inline:false }] }] };
         await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}); chime();
     }
 
+    // =========================================================================
+    // LOCAL STORAGE & EXPORT / IMPORT
+    // =========================================================================
     function save() {
         const d={}; document.querySelectorAll('input, textarea').forEach(el=>{ if(el.id && !['webhook','fin','img-in'].includes(el.id)) d[el.id]=el.type==='checkbox'?el.checked:el.value; });
         d['img']=document.getElementById('s-img').src; localStorage.setItem('lcars_ship_player_data', JSON.stringify(d));
