@@ -3,268 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LCARS Starship Master Systems Display</title>
+    <title>LCARS MSD - Player Starship</title>
     <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --lcars-orange: #ff9900;
-            --lcars-purple: #cc99cc;
-            --lcars-blue: #99ccff;
-            --lcars-yellow: #ffcc00;
-            --lcars-peach: #ffcc99;
-            --lcars-red: #cc3333;
-            --lcars-dark: #000000;
-            --lcars-gray: #1a1a1a;
-            --font-main: 'Antonio', sans-serif;
-        }
-        body { background: var(--lcars-dark); color: white; font-family: var(--font-main); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
-        .lcars-container { width: 880px; display: flex; flex-direction: column; gap: 12px; }
-        .lcars-bar { background: var(--lcars-gray); border: 2px solid var(--lcars-orange); border-radius: 18px; padding: 8px 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-        .lcars-bar label { font-size: 10pt; color: var(--lcars-orange); font-weight: bold; }
-        .lcars-bar input { flex-grow: 1; background: black; border: 1px solid var(--lcars-blue); color: var(--lcars-blue); padding: 4px 8px; font-family: var(--font-main); border-radius: 4px; }
-        .lcars-header { display: flex; justify-content: space-between; align-items: center; background: var(--lcars-purple); color: black; border-radius: 25px 25px 0 0; padding: 8px 24px; font-weight: bold; }
-        .lcars-panel { border: 2px solid; border-radius: 8px; padding: 12px; position: relative; background: rgba(25,25,25,0.7); }
-        .lcars-panel.orange { border-color: var(--lcars-orange); }
-        .lcars-panel.blue { border-color: var(--lcars-blue); }
-        .lcars-panel.yellow { border-color: var(--lcars-yellow); }
-        .lcars-panel.purple { border-color: var(--lcars-purple); }
-        .lcars-title { position: absolute; top: -10px; left: 15px; background: var(--lcars-dark); padding: 0 8px; font-weight: bold; text-transform: uppercase; font-size: 10pt; }
-        .orange .lcars-title { color: var(--lcars-orange); }
-        .blue .lcars-title { color: var(--lcars-blue); }
-        .yellow .lcars-title { color: var(--lcars-yellow); }
-        .purple .lcars-title { color: var(--lcars-purple); }
-        input[type="text"], input[type="number"], textarea { width: 100%; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.3); color: white; font-family: var(--font-main); font-size: 11pt; padding: 3px 0; box-sizing: border-box; text-transform: uppercase; }
-        input:focus, textarea:focus { outline: none; border-bottom-color: var(--lcars-blue); }
-        label { display: block; font-size: 8.5pt; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-top: 5px; }
-        .lcars-btn { background: var(--lcars-orange); color: black; border: none; border-radius: 12px; padding: 4px 10px; font-family: var(--font-main); font-weight: bold; font-size: 9.5pt; cursor: pointer; text-transform: uppercase; }
-        .lcars-btn.blue { background: var(--lcars-blue); }
-        .lcars-btn.yellow { background: var(--lcars-yellow); }
-        .lcars-btn.peach { background: var(--lcars-peach); }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        :root { --orange: #ff9900; --purple: #cc99cc; --blue: #99ccff; --yellow: #ffcc00; --peach: #ffcc99; --red: #cc3333; --dark: #000; --gray: #1a1a1a; --font: 'Antonio', sans-serif; }
+        body { background: var(--dark); color: #fff; font-family: var(--font); margin: 0; padding: 12px; display: flex; flex-direction: column; align-items: center; }
+        .lcars-box { width: 870px; display: flex; flex-direction: column; gap: 10px; }
+        .bar { background: var(--gray); border: 2px solid var(--orange); border-radius: 18px; padding: 6px 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .bar label { font-size: 9.5pt; color: var(--orange); font-weight: bold; }
+        .bar input { flex-grow: 1; background: #000; border: 1px solid var(--blue); color: var(--blue); padding: 4px 8px; font-family: var(--font); border-radius: 4px; }
+        .hdr { display: flex; justify-content: space-between; align-items: center; background: var(--orange); color: #000; border-radius: 20px 20px 0 0; padding: 6px 20px; font-weight: bold; }
+        .pnl { border: 2px solid var(--orange); border-radius: 8px; padding: 10px 12px; position: relative; background: rgba(25,25,25,0.75); }
+        .pnl.blue { border-color: var(--blue); } .pnl.yellow { border-color: var(--yellow); } .pnl.purple { border-color: var(--purple); }
+        .title { position: absolute; top: -9px; left: 14px; background: var(--dark); padding: 0 6px; font-weight: bold; font-size: 9.5pt; letter-spacing: 1px; color: var(--orange); }
+        .blue .title { color: var(--blue); } .yellow .title { color: var(--yellow); } .purple .title { color: var(--purple); }
+        input[type="text"], input[type="number"], textarea { width: 100%; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.3); color: #fff; font-family: var(--font); font-size: 10.5pt; padding: 2px 0; box-sizing: border-box; text-transform: uppercase; }
+        input:focus, textarea:focus { outline: none; border-bottom-color: var(--blue); }
+        textarea { resize: vertical; min-height: 48px; text-transform: none; }
+        label { display: block; font-size: 8pt; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-top: 4px; }
+        .btn { background: var(--orange); color: #000; border: none; border-radius: 10px; padding: 3px 8px; font-family: var(--font); font-weight: bold; font-size: 9pt; cursor: pointer; text-transform: uppercase; }
+        .btn.blue { background: var(--blue); } .btn.yellow { background: var(--yellow); } .btn.purple { background: var(--purple); }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-        .station-row { display: grid; grid-template-columns: 100px 1fr 60px; gap: 8px; align-items: center; margin-bottom: 6px; background: rgba(153,204,255,0.08); padding: 4px 8px; border-radius: 4px; }
-        .station-label { font-size: 10pt; font-weight: bold; color: var(--lcars-yellow); }
-        .stress-bar-grid { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
-        .stress-bar-grid input[type="checkbox"] { appearance: none; width: 25px; height: 20px; border: 2px solid var(--lcars-orange); border-radius: 3px; cursor: pointer; }
-        .stress-bar-grid input[type="checkbox"]:checked { background: var(--lcars-orange); }
+        .stress-row { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
+        .stress-row input[type="checkbox"] { appearance: none; width: 20px; height: 18px; border: 2px solid var(--orange); border-radius: 3px; cursor: pointer; }
+        .stress-row input[type="checkbox"]:checked { background: var(--orange); }
+        .card { background: rgba(255,153,0,0.06); border: 1px solid rgba(255,153,0,0.25); border-radius: 6px; padding: 6px; display: flex; flex-direction: column; gap: 3px; }
+        .schematic-box { border: 2px dashed var(--orange); background: rgba(0,0,0,0.6); border-radius: 8px; height: 125px; display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; overflow: hidden; }
+        .schematic-box:hover { border-color: var(--yellow); background: rgba(255,204,0,0.05); }
+        .schematic-box img { width: 100%; height: 100%; object-fit: contain; display: none; }
+        .schematic-prompt { text-align: center; color: var(--orange); font-size: 9pt; letter-spacing: 1px; pointer-events: none; }
+        .clear-btn { position: absolute; top: 4px; right: 4px; background: rgba(204,51,51,0.85); color: #fff; border: none; border-radius: 4px; font-size: 7.5pt; font-weight: bold; padding: 2px 6px; display: none; cursor: pointer; font-family: var(--font); }
     </style>
 </head>
 <body>
-<div class="lcars-container">
-    <div class="lcars-bar">
-        <label for="webhook-url">SUBSPACE RELAY:</label>
-        <input type="password" id="webhook-url" placeholder="Discord Webhook URL..." onchange="saveWebhook()">
-        <button class="lcars-btn blue" onclick="toggleWebhookVisibility()">SHOW/HIDE</button>
-        <button class="lcars-btn" id="audio-toggle-btn" onclick="toggleAudio()">AUDIO: ON</button>
-        <button class="lcars-btn peach" onclick="broadcastShipStatus()">📡 BROADCAST SHIP</button>
-        <button class="lcars-btn" onclick="exportData()">💾 EXPORT</button>
-        <button class="lcars-btn" onclick="document.getElementById('file-in').click()">📂 IMPORT</button>
-        <input type="file" id="file-in" accept=".json" style="display:none;" onchange="importData(event)">
-        <span id="status" style="font-size: 10pt; color: var(--lcars-yellow); margin-left: auto;">READY</span>
+<div class="lcars-box">
+    <div class="bar">
+        <label for="webhook">SUBSPACE RELAY:</label>
+        <input type="password" id="webhook" placeholder="Discord Webhook URL..." onchange="saveHook()">
+        <button class="btn blue" onclick="toggleHook()">SHOW/HIDE</button>
+        <button class="btn yellow" id="aud-btn" onclick="toggleAud()">AUDIO: ON</button>
+        <button class="btn" onclick="broadcast()">📡 BROADCAST MSD</button>
+        <button class="btn blue" onclick="exportJSON()">💾 EXPORT</button>
+        <button class="btn purple" onclick="document.getElementById('fin').click()">📂 IMPORT</button>
+        <input type="file" id="fin" accept=".json" style="display:none;" onchange="importJSON(event)">
+        <span id="comm-st" style="font-size: 9.5pt; color: var(--yellow); margin-left: auto;">READY</span>
     </div>
 
-    <div class="lcars-header">
-        <span style="font-size: 18pt; letter-spacing: 2px;">STARSHIP MASTER SYSTEMS DISPLAY // FATE CORE</span>
-        <span style="font-size: 10pt;">CODIE & SaMS TACTICAL INTERFACE</span>
-    </div>
+    <header class="hdr">
+        <span style="font-size: 16pt; letter-spacing: 1.5px;">MASTER SYSTEMS DISPLAY // PRIMARY VESSEL</span>
+        <span style="font-size: 9.5pt;">PROTOTYPE DREADNOUGHT INTERFACE</span>
+    </header>
 
-    <section class="lcars-panel yellow">
-        <div class="lcars-title">VESSEL IDENTIFICATION</div>
-        <div class="grid-4">
-            <div><label>SHIP NAME</label><input type="text" id="ship-name" placeholder="USS BASTION" oninput="save()"></div>
-            <div><label>REGISTRY</label><input type="text" id="ship-reg" placeholder="NCC-7448" oninput="save()"></div>
-            <div><label>CLASS</label><input type="text" id="ship-class" placeholder="SOVEREIGN / GALAXY-X" oninput="save()"></div>
-            <div><label>COMMANDING OFFICER</label><input type="text" id="ship-co" placeholder="FLT CAPT SILAS VANE" oninput="save()"></div>
+    <section class="pnl">
+        <div class="title">VESSEL SPECIFICATIONS & SCHEMATIC</div>
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px;">
+            <div>
+                <div class="grid-2">
+                    <div><label>NAME</label><input type="text" id="name" value="U.S.S. JOHN-HANCOCK" oninput="save()"></div>
+                    <div><label>REGISTRY & CLASS</label><input type="text" id="class" value="N.C.C. - 75019 // GALAXY-X DREADNOUGHT" oninput="save()"></div>
+                    <div><label>COMMANDING OFFICER</label><input type="text" id="co" value="CADET CREW" oninput="save()"></div>
+                    <div><label>ASSIGNMENT</label><input type="text" id="role" value="EXPERIMENTAL FIELD EVALUATION" oninput="save()"></div>
+                </div>
+                <div class="grid-4" style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed rgba(255,153,0,0.3);">
+                    <div><label>CODIE (POWER)</label><input type="number" id="codie" value="12" oninput="save()"></div>
+                    <div><label>SaMS (AGILITY)</label><input type="number" id="sams" value="3" oninput="save()"></div>
+                    <div><label>SHIELD RATING</label><input type="number" id="s-rate" value="12" oninput="save()"></div>
+                    <div>
+                        <label>STABILITY</label>
+                        <div style="display: flex; gap: 3px;">
+                            <input type="number" id="s-stab" value="6" oninput="save()">
+                            <button class="btn yellow" onclick="rollStab()">RAISE</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <label style="margin-top:0;">TACTICAL SCHEMATIC</label>
+                <div class="schematic-box" id="s-box" onclick="triggerImg(event)">
+                    <img id="s-img" src="" alt="Schematic">
+                    <div id="s-txt" class="schematic-prompt"><div>📷 [ LOAD SCHEMATIC ]</div><div style="font-size: 7pt; color: var(--yellow);">CLICK TO SELECT IMAGE</div></div>
+                    <button class="clear-btn" id="s-clr" onclick="clearImg(event)">✕ REMOVE</button>
+                    <input type="file" id="img-in" accept="image/*" style="display:none;" onchange="loadImg(event)">
+                </div>
+            </div>
         </div>
-        <div class="grid-2" style="margin-top: 6px;">
-            <div><label>VESSEL HIGH CONCEPT</label><input type="text" id="ship-hc" placeholder="e.g. Prototype Fleet Command Dreadnought" oninput="save()"></div>
-            <div><label>VESSEL TROUBLE / VULNERABILITY</label><input type="text" id="ship-tr" placeholder="e.g. Overheating Spinal Phaser Lance EPS" oninput="save()"></div>
+    </section>
+
+    <section class="pnl yellow">
+        <div class="title">BRIDGE STATIONS (CLICK TO ROLL)</div>
+        <div class="grid-3">
+            <div class="card">
+                <span style="color: var(--red); font-weight: bold; font-size: 8.5pt;">SPINAL PHASER LANCE (WR: 10)</span>
+                <input type="text" id="act-lance" value="Spinal Lance (+4)" oninput="save()">
+                <div style="display: flex; gap: 4px; align-items: center;"><label style="margin:0;">RATING:</label><input type="number" id="mod-lance" value="4" style="width:35px; text-align:center;"><button class="btn" onclick="rollSt('act-lance', 'mod-lance', 'Spinal Lance')">FIRE</button></div>
+            </div>
+            <div class="card">
+                <span style="color: var(--orange); font-weight: bold; font-size: 8.5pt;">TACTICAL (TYPE-X PHASERS)</span>
+                <input type="text" id="act-tac" value="Phaser Array Volley (+3)" oninput="save()">
+                <div style="display: flex; gap: 4px; align-items: center;"><label style="margin:0;">RATING:</label><input type="number" id="mod-tac" value="3" style="width:35px; text-align:center;"><button class="btn orange" onclick="rollSt('act-tac', 'mod-tac', 'Phaser Volley')">FIRE</button></div>
+            </div>
+            <div class="card">
+                <span style="color: var(--yellow); font-weight: bold; font-size: 8.5pt;">HELM (SaMS / EVASION)</span>
+                <input type="text" id="act-helm" value="Evasive Maneuvers (+3)" oninput="save()">
+                <div style="display: flex; gap: 4px; align-items: center;"><label style="margin:0;">RATING:</label><input type="number" id="mod-helm" value="3" style="width:35px; text-align:center;"><button class="btn yellow" onclick="rollSt('act-helm', 'mod-helm', 'Evasive Maneuver')">EVADE</button></div>
+            </div>
+            <div class="card">
+                <span style="color: var(--blue); font-weight: bold; font-size: 8.5pt;">SCIENCE (SENSOR SCAN)</span>
+                <input type="text" id="act-sci" value="Harmonic Target Scan (+4)" oninput="save()">
+                <div style="display: flex; gap: 4px; align-items: center;"><label style="margin:0;">RATING:</label><input type="number" id="mod-sci" value="4" style="width:35px; text-align:center;"><button class="btn blue" onclick="rollSt('act-sci', 'mod-sci', 'Sensor Scan')">SCAN</button></div>
+            </div>
+            <div class="card">
+                <span style="color: var(--purple); font-weight: bold; font-size: 8.5pt;">ENGINEERING (POWER MANAGEMENT)</span>
+                <input type="text" id="act-eng" value="Third Nacelle Power Tap (+4)" oninput="save()">
+                <div style="display: flex; gap: 4px; align-items: center;"><label style="margin:0;">RATING:</label><input type="number" id="mod-eng" value="4" style="width:35px; text-align:center;"><button class="btn purple" onclick="rollSt('act-eng', 'mod-eng', 'Power Management')">REROUTE</button></div>
+            </div>
+            <div class="card">
+                <span style="color: #fff; font-weight: bold; font-size: 8.5pt;">COMMAND (ORDERS)</span>
+                <input type="text" id="act-cmd" value="Tactical Command Order (+3)" oninput="save()">
+                <div style="display: flex; gap: 4px; align-items: center;"><label style="margin:0;">RATING:</label><input type="number" id="mod-cmd" value="3" style="width:35px; text-align:center;"><button class="btn" onclick="rollSt('act-cmd', 'mod-cmd', 'Command Order')">ORDER</button></div>
+            </div>
         </div>
     </section>
 
     <div class="grid-2">
-        <section class="lcars-panel orange">
-            <div class="lcars-title">TACTICAL RATINGS (CODIE & SaMS)</div>
-            <div class="grid-2">
-                <div>
-                    <label>CODIE (POWER / SIZE CAP)</label>
-                    <input type="number" id="ship-codie" value="11" oninput="save()">
-                </div>
-                <div>
-                    <label>SaMS (AGILITY / STEALTH CAP)</label>
-                    <input type="number" id="ship-sams" value="4" oninput="save()">
-                </div>
-            </div>
-            <div class="grid-2" style="margin-top: 6px;">
-                <div>
-                    <label>SHIELD STABILITY THRESHOLD</label>
-                    <input type="number" id="shield-stab" value="6" oninput="save()">
-                </div>
-                <div>
-                    <label>SHIELD RATING (MAX CODIE)</label>
-                    <input type="number" id="shield-max" value="11" oninput="save()">
-                </div>
-            </div>
-            <div style="margin-top: 10px;">
-                <label>HULL & SHIELD STRESS TRACK (BOXES 1 - 12)</label>
-                <div class="stress-bar-grid">
-                    <label><input type="checkbox" id="ss-1" onchange="checkAudio()"><br>1</label>
-                    <label><input type="checkbox" id="ss-2" onchange="checkAudio()"><br>2</label>
-                    <label><input type="checkbox" id="ss-3" onchange="checkAudio()"><br>3</label>
-                    <label><input type="checkbox" id="ss-4" onchange="checkAudio()"><br>4</label>
-                    <label><input type="checkbox" id="ss-5" onchange="checkAudio()"><br>5</label>
-                    <label><input type="checkbox" id="ss-6" onchange="checkAudio()"><br>6</label>
-                    <label><input type="checkbox" id="ss-7" onchange="checkAudio()"><br>7</label>
-                    <label><input type="checkbox" id="ss-8" onchange="checkAudio()"><br>8</label>
-                    <label><input type="checkbox" id="ss-9" onchange="checkAudio()"><br>9</label>
-                    <label><input type="checkbox" id="ss-10" onchange="checkAudio()"><br>10</label>
-                    <label><input type="checkbox" id="ss-11" onchange="checkAudio()"><br>11</label>
-                    <label><input type="checkbox" id="ss-12" onchange="checkAudio()"><br>12</label>
-                </div>
-            </div>
+        <section class="pnl blue">
+            <div class="title">VESSEL ASPECTS & PROTOCOLS</div>
+            <label>HIGH CONCEPT</label><input type="text" id="hc" value="Prototype Galaxy-X Class Dreadnought" oninput="save()">
+            <label>TROUBLE</label><input type="text" id="tr" value="Volatile Prototype Power Management Grid" oninput="save()">
+            <label>TACTICAL WEAPON ASPECT</label><input type="text" id="a3" value="Spinal Phaser Lance (Weapon Rating 10)" oninput="save()">
+            <label>ENGINEERING ASPECT</label><input type="text" id="a4" value="Third Dorsal Nacelle Auxiliary Plasma Tap" oninput="save()">
         </section>
 
-        <section class="lcars-panel blue">
-            <div class="lcars-title">BRIDGE STATIONS (CLICK ROLL)</div>
-            <div class="station-row">
-                <span class="station-label">HELM</span>
-                <input type="text" id="st-helm" placeholder="Piloting / Evasive (+3)" oninput="save()">
-                <button class="lcars-btn" onclick="rollStation('HELM / EVASION', 'st-helm')">ROLL</button>
+        <section class="pnl purple">
+            <div class="title">HULL INTEGRITY (12 BOXES - CODIE CAP)</div>
+            <div class="stress-row">
+                <label><input type="checkbox" id="hs-1" onchange="onBox()"> 1</label>
+                <label><input type="checkbox" id="hs-2" onchange="onBox()"> 2</label>
+                <label><input type="checkbox" id="hs-3" onchange="onBox()"> 3</label>
+                <label><input type="checkbox" id="hs-4" onchange="onBox()"> 4</label>
+                <label><input type="checkbox" id="hs-5" onchange="onBox()"> 5</label>
+                <label><input type="checkbox" id="hs-6" onchange="onBox()"> 6</label>
+                <label><input type="checkbox" id="hs-7" onchange="onBox()"> 7</label>
+                <label><input type="checkbox" id="hs-8" onchange="onBox()"> 8</label>
+                <label><input type="checkbox" id="hs-9" onchange="onBox()"> 9</label>
+                <label><input type="checkbox" id="hs-10" onchange="onBox()"> 10</label>
+                <label><input type="checkbox" id="hs-11" onchange="onBox()"> 11</label>
+                <label><input type="checkbox" id="hs-12" onchange="onBox()"> 12</label>
             </div>
-            <div class="station-row">
-                <span class="station-label">TACTICAL</span>
-                <input type="text" id="st-tac" placeholder="Phasers & Torpedoes (+4)" oninput="save()">
-                <button class="lcars-btn" onclick="rollStation('TACTICAL / WEAPONS', 'st-tac')">ROLL</button>
-            </div>
-            <div class="station-row">
-                <span class="station-label">SCIENCE</span>
-                <input type="text" id="st-sci" placeholder="Sensor Sweep / Scan (+3)" oninput="save()">
-                <button class="lcars-btn" onclick="rollStation('SCIENCE / SENSORS', 'st-sci')">ROLL</button>
-            </div>
-            <div class="station-row">
-                <span class="station-label">ENGINEERING</span>
-                <input type="text" id="st-eng" placeholder="Reroute Power / Damage (+4)" oninput="save()">
-                <button class="lcars-btn" onclick="rollStation('ENGINEERING / REPAIRS', 'st-eng')">ROLL</button>
-            </div>
-            <div class="station-row">
-                <span class="station-label">COMMAND</span>
-                <input type="text" id="st-cmd" placeholder="Orders & Coordination (+3)" oninput="save()">
-                <button class="lcars-btn" onclick="rollStation('COMMAND / ORDERS', 'st-cmd')">ROLL</button>
-            </div>
+            <label>MILD (-2)</label><input type="text" id="c-mild" placeholder="e.g. EPS Conduit Flare" oninput="save()">
+            <label>MODERATE (-4)</label><input type="text" id="c-mod" placeholder="e.g. Lance Capacitor Overheat" oninput="save()">
+            <label>SEVERE (-6)</label><input type="text" id="c-sev" placeholder="e.g. Core Containment Breach" oninput="save()">
         </section>
     </div>
 
-    <div class="grid-2">
-        <section class="lcars-panel purple">
-            <div class="lcars-title">SYSTEM CONSEQUENCES</div>
-            <div><label>MILD (-2) [e.g. Lateral Sensor Distortion]</label><input type="text" id="cons-mild" oninput="save()"></div>
-            <div><label>MODERATE (-4) [e.g. Impulse Manifold Rupture]</label><input type="text" id="cons-mod" oninput="save()"></div>
-            <div><label>SEVERE (-6) [e.g. Main Warp Core Containment Breach]</label><input type="text" id="cons-sev" oninput="save()"></div>
-        </section>
-
-        <section class="lcars-panel orange">
-            <div class="lcars-title">WEAPON RATINGS & SHIP STUNTS</div>
-            <textarea id="ship-stunts" style="height: 105px;" placeholder="• Type-X Phaser Arrays (+2 attack)&#10;• Quantum Torpedoes (Weapon Rating: 7)&#10;• Spinal Phaser Lance (Weapon Rating: 10, direct warp tap)" oninput="save()"></textarea>
-        </section>
-    </div>
+    <section class="pnl">
+        <div class="title">STARSHIP STUNTS & SPECIAL RULES</div>
+        <textarea id="stunts" oninput="save()" placeholder="• Spinal Lance (-2): Weapon Rating 10. Requires Engineering check to avoid temporary Power Brownout.&#10;• Third Nacelle Power Tap (-1): +2 to Engineering Reroute Power actions shunting to weapons/shields."></textarea>
+    </section>
 </div>
 
 <script>
-    let audioCtx = null, audioEnabled = true;
-    function getAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); return audioCtx; }
-    function toggleAudio() { audioEnabled = !audioEnabled; const b = document.getElementById('audio-toggle-btn'); b.textContent = audioEnabled ? "AUDIO: ON" : "AUDIO: OFF"; if (audioEnabled) playPip(); }
-    function playPip() { if (!audioEnabled) return; const c = getAudio(), o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(1150, c.currentTime); g.gain.setValueAtTime(0.1, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime+0.07); o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime+0.07); }
-    function playRoll() { if (!audioEnabled) return; const c = getAudio(), now = c.currentTime, o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(1050, now); o.frequency.setValueAtTime(1450, now+0.04); g.gain.setValueAtTime(0.12, now); g.gain.exponentialRampToValueAtTime(0.001, now+0.12); o.connect(g); g.connect(c.destination); o.start(); o.stop(now+0.12); }
-    function playConfirm() { if (!audioEnabled) return; const c = getAudio(), now = c.currentTime; [880, 1175, 1760].forEach((f, i) => { const o = c.createOscillator(), g = c.createGain(), st = now + (i * 0.04); o.type = 'sine'; o.frequency.setValueAtTime(f, st); g.gain.setValueAtTime(0.1, st); g.gain.exponentialRampToValueAtTime(0.001, st+0.06); o.connect(g); g.connect(c.destination); o.start(st); o.stop(st+0.06); }); }
-    function checkAudio() { playPip(); save(); }
+    let actx=null, audOn=true;
+    function getA() { if(!actx) actx=new(window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); return actx; }
+    function toggleAud() { audOn=!audOn; document.getElementById('aud-btn').textContent = audOn ? "AUDIO: ON" : "AUDIO: OFF"; }
+    function pip() { if(!audOn) return; let c=getA(), now=c.currentTime, o=c.createOscillator(), g=c.createGain(); o.type='sine'; o.frequency.setValueAtTime(880+Math.random()*300, now); g.gain.setValueAtTime(0.08, now); g.gain.exponentialRampToValueAtTime(0.0001, now+0.04); o.connect(g); g.connect(c.destination); o.start(now); o.stop(now+0.04); }
+    function chime() { if(!audOn) return; let c=getA(), now=c.currentTime; [880, 1175, 1760].forEach((f, i) => { let o=c.createOscillator(), g=c.createGain(), st=now+(i*0.045); o.type='sine'; o.frequency.setValueAtTime(f, st); g.gain.setValueAtTime(0.1, st); g.gain.exponentialRampToValueAtTime(0.0001, st+0.06); o.connect(g); g.connect(c.destination); o.start(st); o.stop(st+0.06); }); }
+    function rollAudio() { if(!audOn) return; let c=getA(), now=c.currentTime, o=c.createOscillator(), g=c.createGain(); o.type='sine'; o.frequency.setValueAtTime(1046, now); o.frequency.setValueAtTime(1480, now+0.04); g.gain.setValueAtTime(0.12, now); g.gain.exponentialRampToValueAtTime(0.0001, now+0.12); o.connect(g); g.connect(c.destination); o.start(now); o.stop(now+0.12); }
+    function onBox() { pip(); save(); }
 
-    function getLadder(v) { const l = ["Abysmal","Terrible","Poor","Mediocre","Average","Fair","Good","Great","Superb","Fantastic","Epic","Legendary"]; return v < -2 ? `Abysmal (${v})` : (v > 8 ? `Legendary (+${v})` : `${l[v+2]} (${v>=0?'+'+v:v})`); }
-    function roll4dF() { const f = [-1,0,1], s = {"-1":"[-]","0":"[ ]","1":"[+]"}; let d = "", sum = 0; for(let i=0;i<4;i++){ const r = f[Math.floor(Math.random()*3)]; d += s[r]+" "; sum += r; } return { d: d.trim(), sum }; }
+    function triggerImg(e) { if(e.target.id==='s-clr') return; pip(); document.getElementById('img-in').click(); }
+    function loadImg(e) { let f=e.target.files[0]; if(!f) return; let r=new FileReader(); r.onload=ev=>{ showImg(ev.target.result); save(); chime(); }; r.readAsDataURL(f); }
+    function showImg(url) { let img=document.getElementById('s-img'), txt=document.getElementById('s-txt'), clr=document.getElementById('s-clr'), b=document.getElementById('s-box'); if(url && url.startsWith('data:image')){ img.src=url; img.style.display='block'; txt.style.display='none'; clr.style.display='block'; b.style.borderStyle='solid'; } else { img.src=''; img.style.display='none'; txt.style.display='block'; clr.style.display='none'; b.style.borderStyle='dashed'; } }
+    function clearImg(e) { e.stopPropagation(); pip(); showImg(''); document.getElementById('img-in').value=''; save(); }
 
-    async function sendDiscord(station, actionName, mod) {
-        playRoll();
-        const url = document.getElementById('webhook-url').value.trim();
-        const st = document.getElementById('status');
-        if (!url.startsWith('http')) { alert("Enter valid Subspace Webhook URL."); return; }
-        const ship = document.getElementById('ship-name').value.trim() || "Starfleet Vessel";
-        const dice = roll4dF(); const tot = dice.sum + mod;
-        const payload = { username: ship, embeds: [{ title: `[${station}] ${actionName}: ${tot >= 0 ? '+' + tot : tot} (${getLadder(tot)})`, description: `**Dice:** \`${dice.d}\`\n**Roll Sum:** ${dice.sum} | **Station Mod:** ${mod >= 0 ? '+' + mod : mod}`, color: 16750848 }] };
-        st.textContent = "TRANSMITTING...";
-        try {
-            const r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
-            if (r.ok) { playConfirm(); st.textContent = "SENT"; setTimeout(()=>st.textContent="READY",2500); }
-        } catch(e) { st.textContent = "FAILED"; }
+    function getLad(v) { const l=["Abysmal","Terrible","Poor","Mediocre","Average","Fair","Good","Great","Superb","Fantastic","Epic","Legendary"]; return v<-2?`Abysmal (${v})`:(v>8?`Legendary (+${v})`:`${l[v+2]} (${v>=0?'+'+v:v})`); }
+    function roll4dF() { const f=[-1,0,1], sym={"-1":"−","0":" ","1":"+"}; let raw=[], sum=0; for(let i=0;i<4;i++){ let r=f[Math.floor(Math.random()*3)]; raw.push(r); sum+=r; } return { raw, sum, sym }; }
+
+    async function sendDiscord(action, mod) {
+        rollAudio(); const url=document.getElementById('webhook').value.trim(), st=document.getElementById('comm-st');
+        if(!url.startsWith('http')) { alert("Enter valid Discord Webhook URL."); return; }
+        const ship=document.getElementById('name').value.trim()||"Player Vessel", dice=roll4dF(), tot=dice.sum+mod;
+        const box=`\`\`\`text\n${dice.raw.map(()=>"┌───┐").join(" ")}\n${dice.raw.map(r=>`│ ${dice.sym[r]} │`).join(" ")}\n${dice.raw.map(()=>"└───┘").join(" ")}\n\`\`\``;
+        const payload = { username: `🚀 ${ship}`, embeds: [{ title: `ACTION // ${action.toUpperCase()}`, description: `${box}\n**Dice:** \`${dice.sum>=0?'+'+dice.sum:dice.sum}\` | **Rating:** \`${mod>=0?'+'+mod:mod}\` | **Total:** \`${tot>=0?'+'+tot:tot}\``, color: 16750848, fields:[{ name:"EVALUATION", value:`>>> ### ❖ ${getLad(tot).toUpperCase()}` }] }] };
+        st.textContent="TRANSMITTING...";
+        try { let r=await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}); if(r.ok){ chime(); st.textContent="TRANSMITTED"; setTimeout(()=>st.textContent="READY",2500); } } catch(e){ st.textContent="FAILED"; }
     }
+    function rollSt(lid, mid, fb) { sendDiscord(document.getElementById(lid).value.trim()||fb, parseInt(document.getElementById(mid).value,10)||0); }
+    function rollStab() { let mod=parseInt(document.getElementById('mod-eng').value,10)||4, d=roll4dF(), st=Math.max(2, d.sum+mod); document.getElementById('s-stab').value=st; save(); sendDiscord(`Shields Raised // Stability Set to ${st}`, mod); }
 
-    function rollStation(station, id) {
-        const val = document.getElementById(id).value.trim();
-        const match = val.match(/([+-]?\d+)/);
-        const mod = match ? parseInt(match[1], 10) : 0;
-        sendDiscord(station, val || "Maneuver", mod);
-    }
-
-    async function broadcastShipStatus() {
-        playRoll();
-        const url = document.getElementById('webhook-url').value.trim();
-        if (!url.startsWith('http')) { alert("Subspace Relay Offline."); return; }
-        const name = document.getElementById('ship-name').value.trim() || "USS Starship";
-        const reg = document.getElementById('ship-reg').value.trim();
-        const codie = document.getElementById('ship-codie').value || "10";
-        const sams = document.getElementById('ship-sams').value || "4";
-        const stab = document.getElementById('shield-stab').value || "6";
-        const maxS = document.getElementById('shield-max').value || "10";
-        const hc = document.getElementById('ship-hc').value.trim() || "None";
-        const tr = document.getElementById('ship-tr').value.trim() || "None";
-        const stress = [1,2,3,4,5,6,7,8,9,10,11,12].map(i => document.getElementById(`ss-${i}`).checked ? '[X]' : '[ ]').join(' ');
-        const cm = document.getElementById('cons-mild').value.trim() || "None";
-        const cd = document.getElementById('cons-mod').value.trim() || "None";
-        const cs = document.getElementById('cons-sev').value.trim() || "None";
-
-        const payload = {
-            username: `${name} ${reg}`,
-            embeds: [{
-                title: `🛸 MASTER SYSTEMS DISPLAY: ${name} (${reg})`,
-                description: `**High Concept:** ${hc}\n**Vessel Vulnerability:** ${tr}\n**CODIE Cap:** ${codie} | **SaMS Cap:** ${sams} | **Shields:** ${stab} / ${maxS}`,
-                color: 16750848,
-                fields: [
-                    { name: "Hull & Shield Stress", value: `\`${stress}\`` },
-                    { name: "System Consequences", value: `**Mild (-2):** ${cm}\n**Moderate (-4):** ${cd}\n**Severe (-6):** ${cs}` }
-                ]
-            }]
-        };
-        await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
-        playConfirm();
+    async function broadcast() {
+        rollAudio(); const url=document.getElementById('webhook').value.trim(); if(!url.startsWith('http')) { alert("Enter Webhook URL."); return; }
+        const n=document.getElementById('name').value, c=document.getElementById('class').value, cd=document.getElementById('codie').value, sm=document.getElementById('sams').value, sr=document.getElementById('s-rate').value, ss=document.getElementById('s-stab').value;
+        const hs=[1,2,3,4,5,6,7,8,9,10,11,12].map(i=>document.getElementById(`hs-${i}`).checked?'[X]':'[ ]').join(' ');
+        const payload = { username: `MSD // ${n}`, embeds: [{ title: `📋 STARSHIP STATUS: ${n} (${c})`, description: `**CODIE:** ${cd} | **SaMS:** ${sm}\n**Shield Stability:** ${ss} | **Shield Rating:** ${sr}`, color: 16750848, fields:[{ name:"Hull Stress (1-12)", value:`\`${hs}\``, inline:false }, { name:"Consequences", value:`**Mild:** ${document.getElementById('c-mild').value||'None'}\n**Mod:** ${document.getElementById('c-mod').value||'None'}\n**Sev:** ${document.getElementById('c-sev').value||'None'}`, inline:false }] }] };
+        await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}); chime();
     }
 
     function save() {
-        const data = {};
-        document.querySelectorAll('input, textarea').forEach(el => { if (el.id && el.id !== 'webhook-url' && el.id !== 'file-in') data[el.id] = el.type === 'checkbox' ? el.checked : el.value; });
-        localStorage.setItem('lcars_starship_data', JSON.stringify(data));
+        const d={}; document.querySelectorAll('input, textarea').forEach(el=>{ if(el.id && !['webhook','fin','img-in'].includes(el.id)) d[el.id]=el.type==='checkbox'?el.checked:el.value; });
+        d['img']=document.getElementById('s-img').src; localStorage.setItem('lcars_ship_player_data', JSON.stringify(d));
     }
-    function saveWebhook() { playPip(); localStorage.setItem('lcars_ship_webhook', document.getElementById('webhook-url').value); }
-    function toggleWebhookVisibility() { playPip(); const el = document.getElementById('webhook-url'); el.type = el.type === 'password' ? 'text' : 'password'; }
+    function saveHook() { pip(); localStorage.setItem('lcars_ship_player_webhook', document.getElementById('webhook').value); }
+    function toggleHook() { pip(); let w=document.getElementById('webhook'); w.type=w.type==='password'?'text':'password'; }
+    function exportJSON() { pip(); save(); let a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([localStorage.getItem('lcars_ship_player_data')||'{}'], {type:'application/json'})); a.download=`MSD_${(document.getElementById('name').value||'SHIP').replace(/\s+/g,'_')}.json`; a.click(); chime(); }
+    function importJSON(e) { let f=e.target.files[0]; if(!f) return; let r=new FileReader(); r.onload=ev=>{ let d=JSON.parse(ev.target.result); for(let k in d){ let el=document.getElementById(k); if(el){ if(el.type==='checkbox') el.checked=d[k]; else el.value=d[k]; } } if(d['img']) showImg(d['img']); save(); chime(); }; r.readAsText(f); }
 
-    function exportData() {
-        playPip(); save();
-        const blob = new Blob([localStorage.getItem('lcars_starship_data') || '{}'], { type: 'application/json' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-        a.download = `STARSHIP_${(document.getElementById('ship-name').value || 'Vessel').replace(/\s+/g,'_')}.json`;
-        a.click(); playConfirm();
-    }
-    function importData(e) {
-        const file = e.target.files[0]; if (!file) return;
-        const r = new FileReader();
-        r.onload = ev => {
-            const data = JSON.parse(ev.target.result);
-            for (let k in data) { const el = document.getElementById(k); if (el) { if (el.type === 'checkbox') el.checked = data[k]; else el.value = data[k]; } }
-            save(); playConfirm();
-        };
-        r.readAsText(file);
-    }
-    window.addEventListener('DOMContentLoaded', () => {
-        const w = localStorage.getItem('lcars_ship_webhook'); if (w) document.getElementById('webhook-url').value = w;
-        const d = JSON.parse(localStorage.getItem('lcars_starship_data') || '{}');
-        for (let k in d) { const el = document.getElementById(k); if (el) { if (el.type === 'checkbox') el.checked = d[k]; else el.value = d[k]; } }
+    window.addEventListener('DOMContentLoaded', ()=>{
+        let w=localStorage.getItem('lcars_ship_player_webhook'); if(w) document.getElementById('webhook').value=w;
+        let d=JSON.parse(localStorage.getItem('lcars_ship_player_data')||'{}'); for(let k in d){ let el=document.getElementById(k); if(el){ if(el.type==='checkbox') el.checked=d[k]; else el.value=d[k]; } } if(d['img']) showImg(d['img']);
     });
 </script>
 </body>
