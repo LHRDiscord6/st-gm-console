@@ -194,7 +194,6 @@
     function playRoll() { if (!audioEnabled) return; const c = getAudio(), now = c.currentTime, o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(1046.5, now); o.frequency.setValueAtTime(1479.98, now+0.04); g.gain.setValueAtTime(0.12, now); g.gain.exponentialRampToValueAtTime(0.0001, now+0.12); o.connect(g); g.connect(c.destination); o.start(now); o.stop(now+0.12); }
     function playConfirm() { if (!audioEnabled) return; const c = getAudio(), now = c.currentTime; [880, 1174, 1760].forEach((f, i) => { const o = c.createOscillator(), g = c.createGain(), st = now + (i * 0.045); o.type = 'sine'; o.frequency.setValueAtTime(f, st); g.gain.setValueAtTime(0.1, st); g.gain.exponentialRampToValueAtTime(0.0001, st+0.06); o.connect(g); g.connect(c.destination); o.start(st); o.stop(st+0.06); }); }
     function onBox() { playPip(); save(); }
-    document.addEventListener('keydown', e => { if (['INPUT','TEXTAREA'].includes(e.target.tagName) && !['Shift','Control','Alt','Meta','Tab'].includes(e.key)) playPip(); });
 
     function getLadder(v) { const l = ["Abysmal","Terrible","Poor","Mediocre","Average","Fair","Good","Great","Superb","Fantastic","Epic","Legendary"]; return v < -2 ? `Abysmal (${v})` : (v > 8 ? `Legendary (+${v})` : `${l[v+2]} (${v>=0?'+'+v:v})`); }
     function roll4dF() { const f = [-1,0,1], s = { "-1": "−", "0": " ", "1": "+" }; let raw = [], sum = 0; for(let i=0;i<4;i++){ const r = f[Math.floor(Math.random()*3)]; raw.push(r); sum += r; } return { raw, sum, sym: s }; }
