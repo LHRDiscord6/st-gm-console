@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LCARS Tactical Threat Dossier - Hostile NPC</title>
+    <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --lcars-red: #cc3333;
+            --lcars-crimson: #990000;
+            --lcars-orange: #ff9900;
+            --lcars-yellow: #ffcc00;
+            --lcars-peach: #ffcc99;
+            --lcars-dark: #000000;
+            --lcars-gray: #1a1a1a;
+            --font-main: 'Antonio', sans-serif;
+        }
+        body { background: var(--lcars-dark); color: white; font-family: var(--font-main); margin: 0; padding: 12px; display: flex; flex-direction: column; align-items: center; }
+        .lcars-container { width: 860px; display: flex; flex-direction: column; gap: 10px; }
+        .lcars-bar { background: var(--lcars-gray); border: 2px solid var(--lcars-red); border-radius: 18px; padding: 6px 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .lcars-bar label { font-size: 9.5pt; color: var(--lcars-red); font-weight: bold; }
+        .lcars-bar input { flex-grow: 1; background: black; border: 1px solid var(--lcars-orange); color: var(--lcars-orange); padding: 4px 8px; font-family: var(--font-main); border-radius: 4px; }
+        .lcars-header { display: flex; justify-content: space-between; align-items: center; background: var(--lcars-red); color: black; border-radius: 20px 20px 0 0; padding: 6px 20px; font-weight: bold; }
+        .lcars-panel { border: 2px solid; border-radius: 8px; padding: 10px 12px; position: relative; background: rgba(25,25,25,0.75); }
+        .lcars-panel.red { border-color: var(--lcars-red); }
+        .lcars-panel.orange { border-color: var(--lcars-orange); }
+        .lcars-panel.yellow { border-color: var(--lcars-yellow); }
+        .lcars-title { position: absolute; top: -9px; left: 14px; background: var(--lcars-dark); padding: 0 6px; font-weight: bold; text-transform: uppercase; font-size: 9.5pt; letter-spacing: 1px; }
+        .red .lcars-title { color: var(--lcars-red); }
+        .orange .lcars-title { color: var(--lcars-orange); }
+        .yellow .lcars-title { color: var(--lcars-yellow); }
+        input[type="text"], input[type="number"], textarea { width: 100%; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.3); color: white; font-family: var(--font-main); font-size: 10.5pt; padding: 2px 0; box-sizing: border-box; text-transform: uppercase; }
+        input:focus, textarea:focus { outline: none; border-bottom-color: var(--lcars-red); }
+        textarea { resize: vertical; min-height: 50px; text-transform: none; }
+        label { display: block; font-size: 8pt; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-top: 4px; }
+        .lcars-btn { background: var(--lcars-red); color: black; border: none; border-radius: 10px; padding: 3px 8px; font-family: var(--font-main); font-weight: bold; font-size: 9pt; cursor: pointer; text-transform: uppercase; }
+        .lcars-btn.orange { background: var(--lcars-orange); }
+        .lcars-btn.yellow { background: var(--lcars-yellow); }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .stress-row { display: flex; gap: 8px; margin-top: 4px; }
+        .stress-row input[type="checkbox"] { appearance: none; width: 24px; height: 20px; border: 2px solid var(--lcars-red); border-radius: 3px; cursor: pointer; }
+        .stress-row input[type="checkbox"]:checked { background: var(--lcars-red); }
+        .skill-ladder-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; background: rgba(204,51,51,0.08); padding: 3px 6px; border-radius: 4px; }
+        .skill-badge { width: 75px; font-size: 9.5pt; font-weight: bold; background: var(--lcars-red); color: black; text-align: center; border-radius: 3px; padding: 2px 0; }
+    </style>
+</head>
+<body>
+<div class="lcars-container">
+    <div class="lcars-bar">
+        <label for="webhook-url">SUBSPACE RELAY:</label>
+        <input type="password" id="webhook-url" placeholder="Paste Discord Webhook URL..." onchange="saveWebhook()">
+        <button class="lcars-btn orange" onclick="toggleWebhook()">SHOW/HIDE</button>
+        <button class="lcars-btn yellow" id="audio-btn" onclick="toggleAudio()">AUDIO: ON</button>
+        <button class="lcars-btn" onclick="broadcastThreat()">📡 BROADCAST THREAT</button>
+        <button class="lcars-btn orange" onclick="exportData()">💾 EXPORT</button>
+        <button class="lcars-btn yellow" onclick="document.getElementById('file-in').click()">📂 IMPORT</button>
+        <input type="file" id="file-in" accept=".json" style="display:none;" onchange="importData(event)">
+        <span id="comm-status" style="font-size: 9.5pt; color: var(--lcars-yellow); margin-left: auto;">READY</span>
+    </div>
+
+    <header class="lcars-header">
+        <span style="font-size: 16pt; letter-spacing: 1.5px;">TACTICAL THREAT DOSSIER // ADVERSARY NPC</span>
+        <span style="font-size: 9.5pt;">RED ALERT // HOSTILE ENTITY TARGETING</span>
+    </header>
+
+    <section class="lcars-panel red">
+        <div class="lcars-title">ADVERSARY IDENTIFICATION</div>
+        <div class="grid-4">
+            <div><label>TARGET DESIGNATION</label><input type="text" id="npc-name" placeholder="GUL DARHEEL" oninput="save()"></div>
+            <div><label>MILITARY TITLE</label><input type="text" id="npc-rank" placeholder="ORDER OF THE OBSIDIAN ORDER" oninput="save()"></div>
+            <div><label>SPECIES / FACTION</label><input type="text" id="npc-species" placeholder="CARDASSIAN / ROMULAN" oninput="save()"></div>
+            <div><label>THREAT RATING</label><input type="text" id="npc-tier" placeholder="MAIN VILLAIN / ELITE" oninput="save()"></div>
+        </div>
+    </section>
+
+    <div class="grid-2">
+        <section class="lcars-panel orange">
+            <div class="lcars-title">HOSTILE ASPECTS & TACTICAL FLAWS</div>
+            <label>HIGH CONCEPT</label><input type="text" id="npc-hc" placeholder="e.g. Ruthless Obsidian Order Inquisitor" oninput="save()">
+            <label>FATAL FLAW / TROUBLE</label><input type="text" id="npc-tr" placeholder="e.g. Arrogant Disdain for Starfleet Morals" oninput="save()">
+            <label>COMBAT / TACTICAL ASPECT</label><input type="text" id="npc-a3" placeholder="e.g. Always Commands from Behind Traps" oninput="save()">
+            <label>EQUIPMENT / PSI ASPECT</label><input type="text" id="npc-a4" placeholder="e.g. Spiral-Wave Disruptor Sidearm" oninput="save()">
+        </section>
+
+        <section class="lcars-panel red">
+            <div class="lcars-title">COMBAT SKILLS (CLICK TO ROLL)</div>
+            <div class="skill-ladder-row">
+                <div class="skill-badge">PEAK (+5)</div>
+                <input type="text" id="sk-5" placeholder="Apex Skill (e.g. Provoke)" oninput="save()">
+                <button class="lcars-btn" onclick="rollSkill('sk-5', 5)">ROLL</button>
+            </div>
+            <div class="skill-ladder-row">
+                <div class="skill-badge">GREAT (+4)</div>
+                <input type="text" id="sk-4-1" placeholder="Skill 1 (e.g. Shoot)" oninput="save()">
+                <button class="lcars-btn" onclick="rollSkill('sk-4-1', 4)">ROLL</button>
+                <input type="text" id="sk-4-2" placeholder="Skill 2 (e.g. Fight)" oninput="save()">
+                <button class="lcars-btn" onclick="rollSkill('sk-4-2', 4)">ROLL</button>
+            </div>
+            <div class="skill-ladder-row">
+                <div class="skill-badge">GOOD (+3)</div>
+                <input type="text" id="sk-3-1" placeholder="Skill 1 (e.g. Deceit)" oninput="save()">
+                <button class="lcars-btn" onclick="rollSkill('sk-3-1', 3)">ROLL</button>
+                <input type="text" id="sk-3-2" placeholder="Skill 2 (e.g. Notice)" oninput="save()">
+                <button class="lcars-btn" onclick="rollSkill('sk-3-2', 3)">ROLL</button>
+            </div>
+            <div class="skill-ladder-row">
+                <div class="skill-badge">FAIR (+2)</div>
+                <input type="text" id="sk-2-1" placeholder="Skill 1 (e.g. Physique)" oninput="save()">
+                <button class="lcars-btn" onclick="rollSkill('sk-2-1', 2)">ROLL</button>
+                <input type="text" id="sk-2-2" placeholder="Skill 2 (e.g. Athletics)" oninput="save()">
+                <button class="lcars-btn" onclick="rollSkill('sk-2-2', 2)">ROLL</button>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                <label style="margin:0;">TACTICAL MOD:</label>
+                <input type="number" id="custom-mod" value="0" style="width: 45px; text-align: center;">
+                <button class="lcars-btn orange" onclick="rollCustom()">ENGAGE 4dF</button>
+            </div>
+        </section>
+    </div>
+
+    <div class="grid-2">
+        <section class="lcars-panel orange">
+            <div class="lcars-title">THREAT INTEGRITY & DAMAGE</div>
+            <div class="grid-2">
+                <div>
+                    <label>PHYSICAL STRESS</label>
+                    <div class="stress-row">
+                        <label><input type="checkbox" id="ps-1" onchange="onBox()"> 1</label>
+                        <label><input type="checkbox" id="ps-2" onchange="onBox()"> 2</label>
+                        <label><input type="checkbox" id="ps-3" onchange="onBox()"> 3</label>
+                        <label><input type="checkbox" id="ps-4" onchange="onBox()"> 4</label>
+                    </div>
+                </div>
+                <div>
+                    <label>MENTAL STRESS</label>
+                    <div class="stress-row">
+                        <label><input type="checkbox" id="ms-1" onchange="onBox()"> 1</label>
+                        <label><input type="checkbox" id="ms-2" onchange="onBox()"> 2</label>
+                        <label><input type="checkbox" id="ms-3" onchange="onBox()"> 3</label>
+                        <label><input type="checkbox" id="ms-4" onchange="onBox()"> 4</label>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 6px;">
+                <label>MILD (-2)</label><input type="text" id="cons-mild" oninput="save()">
+                <label>MODERATE (-4)</label><input type="text" id="cons-mod" oninput="save()">
+                <label>SEVERE (-6)</label><input type="text" id="cons-sev" oninput="save()">
+            </div>
+        </section>
+
+        <section class="lcars-panel yellow">
+            <div class="lcars-title">OFFENSIVE STUNTS & LETHAL TRAITS</div>
+            <textarea id="npc-stunts" style="height: 125px;" placeholder="• Calculated Interrogation: +2 to Provoke when targeting an opponent's emotional trouble.&#10;• Ruthless Reprisal: Once per scene, when suffering a physical consequence, immediately make a free Shoot attack at Weapon Rating 3 against the attacker." oninput="save()"></textarea>
+        </section>
+    </div>
+</div>
+
+<script>
+    let audioCtx = null, audioEnabled = true;
+    function getAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); return audioCtx; }
+    function toggleAudio() { audioEnabled = !audioEnabled; const b = document.getElementById('audio-btn'); b.textContent = audioEnabled ? "AUDIO: ON" : "AUDIO: OFF"; }
+    function playPip() { if (!audioEnabled) return; const c = getAudio(), now = c.currentTime, o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(800 + Math.random()*300, now); g.gain.setValueAtTime(0.08, now); g.gain.exponentialRampToValueAtTime(0.0001, now + 0.04); o.connect(g); g.connect(c.destination); o.start(now); o.stop(now + 0.04); }
+    function playRoll() { if (!audioEnabled) return; const c = getAudio(), now = c.currentTime, o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(950, now); o.frequency.setValueAtTime(1350, now+0.04); g.gain.setValueAtTime(0.12, now); g.gain.exponentialRampToValueAtTime(0.0001, now+0.12); o.connect(g); g.connect(c.destination); o.start(now); o.stop(now+0.12); }
+    function playConfirm() { if (!audioEnabled) return; const c = getAudio(), now = c.currentTime; [784, 1046, 1568].forEach((f, i) => { const o = c.createOscillator(), g = c.createGain(), st = now + (i * 0.04); o.type = 'sine'; o.frequency.setValueAtTime(f, st); g.gain.setValueAtTime(0.1, st); g.gain.exponentialRampToValueAtTime(0.0001, st+0.06); o.connect(g); g.connect(c.destination); o.start(st); o.stop(st+0.06); }); }
+    function onBox() { playPip(); save(); }
+    document.addEventListener('keydown', e => { if (['INPUT','TEXTAREA'].includes(e.target.tagName) && !['Shift','Control','Alt','Meta','Tab'].includes(e.key)) playPip(); });
+
+    function getLadder(v) { const l = ["Abysmal","Terrible","Poor","Mediocre","Average","Fair","Good","Great","Superb","Fantastic","Epic","Legendary"]; return v < -2 ? `Abysmal (${v})` : (v > 8 ? `Legendary (+${v})` : `${l[v+2]} (${v>=0?'+'+v:v})`); }
+    function roll4dF() { const f = [-1,0,1], s = {"-1":"[-]","0":"[ ]","1":"[+]"}; let d = "", sum = 0; for(let i=0;i<4;i++){ const r = f[Math.floor(Math.random()*3)]; d += s[r]+" "; sum += r; } return { d: d.trim(), sum }; }
+
+    async function sendDiscord(action, mod) {
+        playRoll();
+        const url = document.getElementById('webhook-url').value.trim();
+        const st = document.getElementById('comm-status');
+        if (!url.startsWith('http')) { alert("Enter valid Subspace Webhook URL."); return; }
+        const name = document.getElementById('npc-name').value.trim() || "Hostile Adversary";
+        const dice = roll4dF(); const tot = dice.sum + mod;
+        const payload = { username: `⚠️ ${name}`, embeds: [{ title: `⚔️ [HOSTILE ACTION] ${action}: ${tot >= 0 ? '+' + tot : tot} (${getLadder(tot)})`, description: `**Dice:** \`${dice.d}\`\n**Dice Sum:** ${dice.sum} | **Modifier:** ${mod >= 0 ? '+' + mod : mod}`, color: 13382451 }] };
+        st.textContent = "TRANSMITTING...";
+        try {
+            const r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+            if (r.ok) { playConfirm(); st.textContent = "SENT"; setTimeout(()=>st.textContent="READY",2500); }
+        } catch(e) { st.textContent = "FAILED"; }
+    }
+    function rollSkill(id, mod) { const name = document.getElementById(id).value.trim() || `Skill (+${mod})`; sendDiscord(name, mod); }
+    function rollCustom() { const m = parseInt(document.getElementById('custom-mod').value,10)||0; sendDiscord("Tactical Roll", m); }
+
+    async function broadcastThreat() {
+        playRoll();
+        const url = document.getElementById('webhook-url').value.trim();
+        if (!url.startsWith('http')) { alert("Enter valid Webhook URL."); return; }
+        const name = document.getElementById('npc-name').value.trim() || "Hostile Target";
+        const rank = document.getElementById('npc-rank').value.trim();
+        const hc = document.getElementById('npc-hc').value.trim() || "None";
+        const tr = document.getElementById('npc-tr').value.trim() || "None";
+        const ps = [1,2,3,4].map(i => document.getElementById(`ps-${i}`).checked ? '[X]' : '[ ]').join(' ');
+        const ms = [1,2,3,4].map(i => document.getElementById(`ms-${i}`).checked ? '[X]' : '[ ]').join(' ');
+        const cm = document.getElementById('cons-mild').value.trim() || "None";
+        const cd = document.getElementById('cons-mod').value.trim() || "None";
+        const payload = {
+            username: `TACTICAL RED ALERT: ${name}`,
+            embeds: [{
+                title: `🚨 ADVERSARY DOSSIER: ${rank ? rank + ' ' : ''}${name}`,
+                description: `**High Concept:** ${hc}\n**Vulnerability/Trouble:** ${tr}`,
+                color: 13382451,
+                fields: [
+                    { name: "Threat Stress", value: `**Physical:** \`${ps}\`\n**Mental:** \`${ms}\``, inline: true },
+                    { name: "Consequences", value: `**Mild:** ${cm}\n**Moderate:** ${cd}`, inline: true }
+                ]
+            }]
+        };
+        await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+        playConfirm();
+    }
+
+    function save() {
+        const data = {};
+        document.querySelectorAll('input, textarea').forEach(el => { if (el.id && el.id !== 'webhook-url' && el.id !== 'custom-mod' && el.id !== 'file-in') data[el.id] = el.type === 'checkbox' ? el.checked : el.value; });
+        localStorage.setItem('lcars_hostile_npc_data', JSON.stringify(data));
+    }
+    function saveWebhook() { playPip(); localStorage.setItem('lcars_hostile_npc_webhook', document.getElementById('webhook-url').value); }
+    function toggleWebhook() { playPip(); const el = document.getElementById('webhook-url'); el.type = el.type === 'password' ? 'text' : 'password'; }
+
+    function exportData() {
+        playPip(); save();
+        const blob = new Blob([localStorage.getItem('lcars_hostile_npc_data') || '{}'], { type: 'application/json' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = `THREAT_${(document.getElementById('npc-name').value || 'Target').replace(/\s+/g,'_')}.json`;
+        a.click(); playConfirm();
+    }
+    function importData(e) {
+        const file = e.target.files[0]; if (!file) return;
+        const r = new FileReader();
+        r.onload = ev => {
+            const data = JSON.parse(ev.target.result);
+            for (let k in data) { const el = document.getElementById(k); if (el) { if (el.type === 'checkbox') el.checked = data[k]; else el.value = data[k]; } }
+            save(); playConfirm();
+        };
+        r.readAsText(file);
+    }
+    window.addEventListener('DOMContentLoaded', () => {
+        const w = localStorage.getItem('lcars_hostile_npc_webhook'); if (w) document.getElementById('webhook-url').value = w;
+        const d = JSON.parse(localStorage.getItem('lcars_hostile_npc_data') || '{}');
+        for (let k in d) { const el = document.getElementById(k); if (el) { if (el.type === 'checkbox') el.checked = d[k]; else el.value = d[k]; } }
+    });
+</script>
+</body>
+</html>
