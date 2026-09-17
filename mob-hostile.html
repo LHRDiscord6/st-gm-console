@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LCARS Tactical Threat Dossier - Mob Unit</title>
+    <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --lcars-orange: #ff9900;
+            --lcars-purple: #cc99cc;
+            --lcars-blue: #99ccff;
+            --lcars-yellow: #ffcc00;
+            --lcars-peach: #ffcc99;
+            --lcars-red: #cc3333;
+            --lcars-dark: #000000;
+            --lcars-gray: #1a1a1a;
+            --font-main: 'Antonio', sans-serif;
+        }
+        body { background: var(--lcars-dark); color: white; font-family: var(--font-main); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .lcars-container { width: 840px; display: flex; flex-direction: column; gap: 12px; }
+        .lcars-bar { background: var(--lcars-gray); border: 2px solid var(--lcars-orange); border-radius: 18px; padding: 8px 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .lcars-bar label { font-size: 10pt; color: var(--lcars-orange); font-weight: bold; }
+        .lcars-bar input { flex-grow: 1; background: black; border: 1px solid var(--lcars-blue); color: var(--lcars-blue); padding: 4px 8px; font-family: var(--font-main); border-radius: 4px; }
+        .lcars-header { display: flex; justify-content: space-between; align-items: center; background: var(--lcars-red); color: black; border-radius: 25px 25px 0 0; padding: 8px 24px; font-weight: bold; }
+        .lcars-panel { border: 2px solid; border-radius: 8px; padding: 12px; position: relative; background: rgba(25,25,25,0.7); }
+        .lcars-panel.red { border-color: var(--lcars-red); }
+        .lcars-panel.orange { border-color: var(--lcars-orange); }
+        .lcars-panel.blue { border-color: var(--lcars-blue); }
+        .lcars-panel.yellow { border-color: var(--lcars-yellow); }
+        .lcars-title { position: absolute; top: -10px; left: 15px; background: var(--lcars-dark); padding: 0 8px; font-weight: bold; text-transform: uppercase; font-size: 10pt; }
+        .red .lcars-title { color: var(--lcars-red); }
+        .orange .lcars-title { color: var(--lcars-orange); }
+        .blue .lcars-title { color: var(--lcars-blue); }
+        .yellow .lcars-title { color: var(--lcars-yellow); }
+        input[type="text"], input[type="number"], textarea { width: 100%; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.3); color: white; font-family: var(--font-main); font-size: 11pt; padding: 3px 0; box-sizing: border-box; text-transform: uppercase; }
+        input:focus, textarea:focus { outline: none; border-bottom-color: var(--lcars-blue); }
+        label { display: block; font-size: 8.5pt; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-top: 5px; }
+        .lcars-btn { background: var(--lcars-orange); color: black; border: none; border-radius: 12px; padding: 4px 10px; font-family: var(--font-main); font-weight: bold; font-size: 9.5pt; cursor: pointer; text-transform: uppercase; }
+        .lcars-btn.blue { background: var(--lcars-blue); }
+        .lcars-btn.red { background: var(--lcars-red); }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .stress-box-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+        .stress-box-row input[type="checkbox"] { appearance: none; width: 28px; height: 22px; border: 2px solid var(--lcars-red); border-radius: 3px; cursor: pointer; }
+        .stress-box-row input[type="checkbox"]:checked { background: var(--lcars-red); }
+        .skill-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 4px; }
+        .skill-badge { width: 85px; font-size: 10pt; font-weight: bold; background: var(--lcars-blue); color: black; text-align: center; border-radius: 3px; padding: 2px 0; }
+    </style>
+</head>
+<body>
+<div class="lcars-container">
+    <div class="lcars-bar">
+        <label for="webhook-url">SUBSPACE RELAY:</label>
+        <input type="password" id="webhook-url" placeholder="Discord Webhook URL..." onchange="saveWebhook()">
+        <button class="lcars-btn blue" onclick="toggleWebhookVisibility()">SHOW/HIDE</button>
+        <button class="lcars-btn" id="audio-toggle-btn" onclick="toggleAudio()">AUDIO: ON</button>
+        <button class="lcars-btn red" onclick="broadcastMobStatus()">📡 BROADCAST MOB</button>
+        <button class="lcars-btn" onclick="exportData()">💾 EXPORT</button>
+        <button class="lcars-btn" onclick="document.getElementById('file-in').click()">📂 IMPORT</button>
+        <input type="file" id="file-in" accept=".json" style="display:none;" onchange="importData(event)">
+        <span id="status" style="font-size: 10pt; color: var(--lcars-yellow); margin-left: auto;">READY</span>
+    </div>
+
+    <div class="lcars-header">
+        <span style="font-size: 18pt; letter-spacing: 2px;">TACTICAL THREAT DOSSIER // MOB UNIT</span>
+        <span style="font-size: 10pt;">SEC-CLASSIFIED // HOSTILE CLUSTER</span>
+    </div>
+
+    <section class="lcars-panel red">
+        <div class="lcars-title">UNIT CLASSIFICATION</div>
+        <div class="grid-3">
+            <div><label>MOB IDENTIFIER</label><input type="text" id="mob-name" placeholder="e.g. DEVOLVED SLASHER SWARM" oninput="save()"></div>
+            <div><label>UNIT ARCHETYPE / SPECIES</label><input type="text" id="mob-type" placeholder="e.g. INFECTED CREW" oninput="save()"></div>
+            <div><label>CURRENT ACTIVE MEMBERS</label><input type="number" id="mob-count" value="4" oninput="save()"></div>
+        </div>
+        <div class="grid-2" style="margin-top: 6px;">
+            <div><label>MOB HIGH CONCEPT</label><input type="text" id="mob-hc" placeholder="e.g. Mindless De-evolved Necrotic Swarm" oninput="save()"></div>
+            <div><label>MOB INSTINCT / TROUBLE</label><input type="text" id="mob-tr" placeholder="e.g. Blind to Flanking; Driven by Noise" oninput="save()"></div>
+        </div>
+    </section>
+
+    <div class="grid-2">
+        <section class="lcars-panel orange">
+            <div class="lcars-title">CLUSTER STRESS TRACK (1 PER MEMBER)</div>
+            <p style="font-size: 8.5pt; color: var(--lcars-peach); margin: 4px 0 8px 0;">Check off boxes as mob members drop or take shifts of damage.</p>
+            <div class="stress-box-row">
+                <label><input type="checkbox" id="ms-1" onchange="checkAudio()"><br>1</label>
+                <label><input type="checkbox" id="ms-2" onchange="checkAudio()"><br>2</label>
+                <label><input type="checkbox" id="ms-3" onchange="checkAudio()"><br>3</label>
+                <label><input type="checkbox" id="ms-4" onchange="checkAudio()"><br>4</label>
+                <label><input type="checkbox" id="ms-5" onchange="checkAudio()"><br>5</label>
+                <label><input type="checkbox" id="ms-6" onchange="checkAudio()"><br>6</label>
+                <label><input type="checkbox" id="ms-7" onchange="checkAudio()"><br>7</label>
+                <label><input type="checkbox" id="ms-8" onchange="checkAudio()"><br>8</label>
+            </div>
+            <div style="margin-top: 12px;">
+                <label>ENVIRONMENTAL / COMBAT ASPECT</label>
+                <input type="text" id="mob-aspect" placeholder="e.g. Emerging From The Jefferies Tubes" oninput="save()">
+            </div>
+        </section>
+
+        <section class="lcars-panel blue">
+            <div class="lcars-title">MOB COLLECTIVE SKILLS</div>
+            <div class="skill-row">
+                <div class="skill-badge">PEAK (+3)</div>
+                <input type="text" id="sk-3" placeholder="Primary Action (e.g. Fight)" oninput="save()">
+                <button class="lcars-btn" onclick="rollMobSkill('sk-3', 3)">ROLL</button>
+            </div>
+            <div class="skill-row">
+                <div class="skill-badge">SEC (+2)</div>
+                <input type="text" id="sk-2" placeholder="Secondary Action (e.g. Athletics)" oninput="save()">
+                <button class="lcars-btn" onclick="rollMobSkill('sk-2', 2)">ROLL</button>
+            </div>
+            <div class="skill-row">
+                <div class="skill-badge">BASE (+1)</div>
+                <input type="text" id="sk-1" placeholder="Tertiary Action (e.g. Notice)" oninput="save()">
+                <button class="lcars-btn" onclick="rollMobSkill('sk-1', 1)">ROLL</button>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px;">
+                <label style="margin:0;">CUSTOM ROLL MOD:</label>
+                <input type="number" id="custom-mod" value="0" style="width: 50px; text-align: center;">
+                <button class="lcars-btn red" onclick="rollCustom()">ENGAGE 4dF</button>
+            </div>
+        </section>
+    </div>
+
+    <section class="lcars-panel yellow">
+        <div class="lcars-title">SPECIAL ABILITIES & SWARM TRAITS</div>
+        <textarea id="mob-notes" style="height: 70px;" placeholder="e.g. Pack Tactics: +1 to attack for each member currently in the same zone beyond the first (capped at +2)." oninput="save()"></textarea>
+    </section>
+</div>
+
+<script>
+    let audioCtx = null, audioEnabled = true;
+    function getAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); return audioCtx; }
+    function toggleAudio() { audioEnabled = !audioEnabled; const b = document.getElementById('audio-toggle-btn'); b.textContent = audioEnabled ? "AUDIO: ON" : "AUDIO: OFF"; if (audioEnabled) playPip(); }
+    function playPip() { if (!audioEnabled) return; const c = getAudio(), o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(1150, c.currentTime); g.gain.setValueAtTime(0.1, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime+0.07); o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime+0.07); }
+    function playRoll() { if (!audioEnabled) return; const c = getAudio(), now = c.currentTime, o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(950, now); o.frequency.setValueAtTime(1350, now+0.04); g.gain.setValueAtTime(0.12, now); g.gain.exponentialRampToValueAtTime(0.001, now+0.12); o.connect(g); g.connect(c.destination); o.start(); o.stop(now+0.12); }
+    function playConfirm() { if (!audioEnabled) return; const c = getAudio(), now = c.currentTime; [784, 1046, 1568].forEach((f, i) => { const o = c.createOscillator(), g = c.createGain(), st = now + (i * 0.04); o.type = 'sine'; o.frequency.setValueAtTime(f, st); g.gain.setValueAtTime(0.1, st); g.gain.exponentialRampToValueAtTime(0.001, st+0.06); o.connect(g); g.connect(c.destination); o.start(st); o.stop(st+0.06); }); }
+    function checkAudio() { playPip(); save(); }
+
+    function getLadder(v) { const l = ["Abysmal","Terrible","Poor","Mediocre","Average","Fair","Good","Great","Superb","Fantastic","Epic","Legendary"]; return v < -2 ? `Abysmal (${v})` : (v > 8 ? `Legendary (+${v})` : `${l[v+2]} (${v>=0?'+'+v:v})`); }
+    function roll4dF() { const f = [-1,0,1], s = {"-1":"[-]","0":"[ ]","1":"[+]"}; let d = "", sum = 0; for(let i=0;i<4;i++){ const r = f[Math.floor(Math.random()*3)]; d += s[r]+" "; sum += r; } return { d: d.trim(), sum }; }
+
+    async function sendDiscord(title, mod) {
+        playRoll();
+        const url = document.getElementById('webhook-url').value.trim();
+        const st = document.getElementById('status');
+        if (!url.startsWith('http')) { alert("Enter valid Subspace Webhook URL."); return; }
+        const mob = document.getElementById('mob-name').value.trim() || "Hostile Mob";
+        const dice = roll4dF(); const tot = dice.sum + mod;
+        const payload = { username: mob, embeds: [{ title: `${title}: ${tot >= 0 ? '+' + tot : tot} (${getLadder(tot)})`, description: `**Dice:** \`${dice.d}\`\n**Dice Sum:** ${dice.sum} | **Modifier:** ${mod >= 0 ? '+' + mod : mod}`, color: 13382451 }] };
+        st.textContent = "TRANSMITTING...";
+        try {
+            const r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+            if (r.ok) { playConfirm(); st.textContent = "SENT"; setTimeout(()=>st.textContent="READY",2500); }
+        } catch(e) { st.textContent = "FAILED"; }
+    }
+
+    function rollMobSkill(id, mod) { const name = document.getElementById(id).value.trim() || `Skill (+${mod})`; sendDiscord(name, mod); }
+    function rollCustom() { const m = parseInt(document.getElementById('custom-mod').value,10)||0; sendDiscord("Mob Tactical Check", m); }
+
+    async function broadcastMobStatus() {
+        playRoll();
+        const url = document.getElementById('webhook-url').value.trim();
+        if (!url.startsWith('http')) { alert("Subspace Relay Offline: Enter valid Webhook URL."); return; }
+        const name = document.getElementById('mob-name').value.trim() || "Hostile Cluster";
+        const count = document.getElementById('mob-count').value || "Unknown";
+        const hc = document.getElementById('mob-hc').value.trim() || "None";
+        const tr = document.getElementById('mob-tr').value.trim() || "None";
+        const asp = document.getElementById('mob-aspect').value.trim() || "None";
+        const stress = [1,2,3,4,5,6,7,8].map(i => document.getElementById(`ms-${i}`).checked ? '[X]' : '[ ]').join(' ');
+        const payload = {
+            username: `TACTICAL SENSORS: ${name}`,
+            embeds: [{
+                title: `⚠️ THREAT REPORT: ${name} (Active Units: ${count})`,
+                description: `**High Concept:** ${hc}\n**Instinct/Trouble:** ${tr}\n**Situational Aspect:** ${asp}`,
+                color: 13382451,
+                fields: [{ name: "Mob Stress Track (1-8)", value: `\`${stress}\`` }]
+            }]
+        };
+        await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+        playConfirm();
+    }
+
+    function save() {
+        const data = {};
+        document.querySelectorAll('input, textarea').forEach(el => { if (el.id && el.id !== 'webhook-url' && el.id !== 'custom-mod' && el.id !== 'file-in') data[el.id] = el.type === 'checkbox' ? el.checked : el.value; });
+        localStorage.setItem('lcars_mob_data', JSON.stringify(data));
+    }
+    function saveWebhook() { playPip(); localStorage.setItem('lcars_mob_webhook', document.getElementById('webhook-url').value); }
+    function toggleWebhookVisibility() { playPip(); const el = document.getElementById('webhook-url'); el.type = el.type === 'password' ? 'text' : 'password'; }
+
+    function exportData() {
+        playPip(); save();
+        const blob = new Blob([localStorage.getItem('lcars_mob_data') || '{}'], { type: 'application/json' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = `MOB_${(document.getElementById('mob-name').value || 'Unit').replace(/\s+/g,'_')}.json`;
+        a.click(); playConfirm();
+    }
+    function importData(e) {
+        const file = e.target.files[0]; if (!file) return;
+        const r = new FileReader();
+        r.onload = ev => {
+            const data = JSON.parse(ev.target.result);
+            for (let k in data) { const el = document.getElementById(k); if (el) { if (el.type === 'checkbox') el.checked = data[k]; else el.value = data[k]; } }
+            save(); playConfirm();
+        };
+        r.readAsText(file);
+    }
+    window.addEventListener('DOMContentLoaded', () => {
+        const w = localStorage.getItem('lcars_mob_webhook'); if (w) document.getElementById('webhook-url').value = w;
+        const d = JSON.parse(localStorage.getItem('lcars_mob_data') || '{}');
+        for (let k in d) { const el = document.getElementById(k); if (el) { if (el.type === 'checkbox') el.checked = d[k]; else el.value = d[k]; } }
+    });
+</script>
+</body>
+</html>
