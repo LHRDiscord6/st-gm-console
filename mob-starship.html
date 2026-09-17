@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LCARS Tactical Strike Squadron - Mob Starships</title>
+    <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --lcars-orange: #ff9900;
+            --lcars-purple: #cc99cc;
+            --lcars-blue: #99ccff;
+            --lcars-yellow: #ffcc00;
+            --lcars-peach: #ffcc99;
+            --lcars-red: #cc3333;
+            --lcars-dark: #000000;
+            --lcars-gray: #1a1a1a;
+            --font-main: 'Antonio', sans-serif;
+        }
+        body { background: var(--lcars-dark); color: white; font-family: var(--font-main); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .lcars-container { width: 850px; display: flex; flex-direction: column; gap: 12px; }
+        .lcars-bar { background: var(--lcars-gray); border: 2px solid var(--lcars-orange); border-radius: 18px; padding: 8px 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .lcars-bar label { font-size: 10pt; color: var(--lcars-orange); font-weight: bold; }
+        .lcars-bar input { flex-grow: 1; background: black; border: 1px solid var(--lcars-blue); color: var(--lcars-blue); padding: 4px 8px; font-family: var(--font-main); border-radius: 4px; }
+        .lcars-header { display: flex; justify-content: space-between; align-items: center; background: var(--lcars-orange); color: black; border-radius: 25px 25px 0 0; padding: 8px 24px; font-weight: bold; }
+        .lcars-panel { border: 2px solid; border-radius: 8px; padding: 12px; position: relative; background: rgba(25,25,25,0.7); }
+        .lcars-panel.orange { border-color: var(--lcars-orange); }
+        .lcars-panel.blue { border-color: var(--lcars-blue); }
+        .lcars-panel.yellow { border-color: var(--lcars-yellow); }
+        .lcars-panel.purple { border-color: var(--lcars-purple); }
+        .lcars-title { position: absolute; top: -10px; left: 15px; background: var(--lcars-dark); padding: 0 8px; font-weight: bold; text-transform: uppercase; font-size: 10pt; }
+        .orange .lcars-title { color: var(--lcars-orange); }
+        .blue .lcars-title { color: var(--lcars-blue); }
+        .yellow .lcars-title { color: var(--lcars-yellow); }
+        .purple .lcars-title { color: var(--lcars-purple); }
+        input[type="text"], input[type="number"], textarea { width: 100%; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.3); color: white; font-family: var(--font-main); font-size: 11pt; padding: 3px 0; box-sizing: border-box; text-transform: uppercase; }
+        input:focus, textarea:focus { outline: none; border-bottom-color: var(--lcars-blue); }
+        label { display: block; font-size: 8.5pt; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-top: 5px; }
+        .lcars-btn { background: var(--lcars-orange); color: black; border: none; border-radius: 12px; padding: 4px 10px; font-family: var(--font-main); font-weight: bold; font-size: 9.5pt; cursor: pointer; text-transform: uppercase; }
+        .lcars-btn.blue { background: var(--lcars-blue); }
+        .lcars-btn.purple { background: var(--lcars-purple); }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .squad-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+        .squad-row input[type="checkbox"] { appearance: none; width: 30px; height: 24px; border: 2px solid var(--lcars-yellow); border-radius: 4px; cursor: pointer; }
+        .squad-row input[type="checkbox"]:checked { background: var(--lcars-red); border-color: var(--lcars-red); }
+        .action-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; background: rgba(153,204,255,0.08); padding: 4px 8px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+<div class="lcars-container">
+    <div class="lcars-bar">
+        <label for="webhook-url">SUBSPACE RELAY:</label>
+        <input type="password" id="webhook-url" placeholder="Discord Webhook URL..." onchange="saveWebhook()">
+        <button class="lcars-btn blue" onclick="toggleWebhookVisibility()">SHOW/HIDE</button>
+        <button class="lcars-btn" id="audio-toggle-btn" onclick="toggleAudio()">AUDIO: ON</button>
+        <button class="lcars-btn purple" onclick="broadcastSquadronStatus()">📡 BROADCAST SQUADRON</button>
+        <button class="lcars-btn" onclick="exportData()">💾 EXPORT</button>
+        <button class="lcars-btn" onclick="document.getElementById('file-in').click()">📂 IMPORT</button>
+        <input type="file" id="file-in" accept=".json" style="display:none;" onchange="importData(event)">
+        <span id="status" style="font-size: 10pt; color: var(--lcars-yellow); margin-left: auto;">READY</span>
+    </div>
+
+    <div class="lcars-header">
+        <span style="font-size: 18pt; letter-spacing: 2px;">TACTICAL STRIKE SQUADRON // MOB STARSHIPS</span>
+        <span style="font-size: 10pt;">FIGHTER WING / PATROL PACK CLUSTER</span>
+    </div>
+
+    <section class="lcars-panel yellow">
+        <div class="lcars-title">SQUADRON DESIGNATION</div>
+        <div class="grid-4">
+            <div><label>SQUADRON CALLSIGN</label><input type="text" id="sq-name" placeholder="OMEGA SQUADRON" oninput="save()"></div>
+            <div><label>CRAFT MODEL</label><input type="text" id="sq-model" placeholder="PEREGRINE / HIDEKI" oninput="save()"></div>
+            <div><label>UNIT CODIE (POWER)</label><input type="number" id="sq-codie" value="4" oninput="save()"></div>
+            <div><label>UNIT SaMS (AGILITY)</label><input type="number" id="sq-sams" value="8" oninput="save()"></div>
+        </div>
+        <div class="grid-2" style="margin-top: 6px;">
+            <div><label>SQUADRON HIGH CONCEPT</label><input type="text" id="sq-hc" placeholder="e.g. Starfleet Academy Attack Fighter Wing" oninput="save()"></div>
+            <div><label>SQUADRON FORMATION VULNERABILITY</label><input type="text" id="sq-tr" placeholder="e.g. Flak Scatter Breaks Swarm Focus" oninput="save()"></div>
+        </div>
+    </section>
+
+    <div class="grid-2">
+        <section class="lcars-panel orange">
+            <div class="lcars-title">SQUADRON INTEGRITY (CRAFT TRACKER)</div>
+            <p style="font-size: 8.5pt; color: var(--lcars-peach); margin: 4px 0 8px 0;">Check boxes as individual ships in the swarm are destroyed or disabled.</p>
+            <div class="squad-row">
+                <label><input type="checkbox" id="sq-1" onchange="checkAudio()"><br>CRAFT 1</label>
+                <label><input type="checkbox" id="sq-2" onchange="checkAudio()"><br>CRAFT 2</label>
+                <label><input type="checkbox" id="sq-3" onchange="checkAudio()"><br>CRAFT 3</label>
+                <label><input type="checkbox" id="sq-4" onchange="checkAudio()"><br>CRAFT 4</label>
+                <label><input type="checkbox" id="sq-5" onchange="checkAudio()"><br>CRAFT 5</label>
+                <label><input type="checkbox" id="sq-6" onchange="checkAudio()"><br>CRAFT 6</label>
+            </div>
+            <div style="margin-top: 10px;">
+                <label>FORMATION SITUATIONAL ASPECT</label>
+                <input type="text" id="sq-aspect" placeholder="e.g. Tight Attack Pattern Delta" oninput="save()">
+            </div>
+        </section>
+
+        <section class="lcars-panel blue">
+            <div class="lcars-title">SWARM MANEUVERS (CLICK ROLL)</div>
+            <div class="action-row">
+                <span style="width: 130px; font-size: 9.5pt; font-weight: bold; color: var(--lcars-yellow);">STRAFING RUN</span>
+                <input type="text" id="act-strafe" placeholder="Collective Attack (+3)" oninput="save()">
+                <button class="lcars-btn" onclick="rollAction('STRAFING RUN', 'act-strafe')">ROLL</button>
+            </div>
+            <div class="action-row">
+                <span style="width: 130px; font-size: 9.5pt; font-weight: bold; color: var(--lcars-yellow);">EVASIVE SCREEN</span>
+                <input type="text" id="act-screen" placeholder="Harassment Defense (+4)" oninput="save()">
+                <button class="lcars-btn" onclick="rollAction('EVASIVE SCREEN', 'act-screen')">ROLL</button>
+            </div>
+            <div class="action-row">
+                <span style="width: 130px; font-size: 9.5pt; font-weight: bold; color: var(--lcars-yellow);">FORMATION BREACH</span>
+                <input type="text" id="act-breach" placeholder="Target Subsystems (+2)" oninput="save()">
+                <button class="lcars-btn" onclick="rollAction('FORMATION BREACH', 'act-breach')">ROLL</button>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px;">
+                <label style="margin:0;">CUSTOM ROLL MOD:</label>
+                <input type="number" id="custom-mod" value="0" style="width: 50px; text-align: center;">
+                <button class="lcars-btn" onclick="rollCustom()">ENGAGE 4dF</button>
+            </div>
+        </section>
+    </div>
+
+    <section class="lcars-panel purple">
+        <div class="lcars-title">SWARM DOCTRINE & WEAPON LOADOUT</div>
+        <textarea id="sq-notes" style="height: 70px;" placeholder="• Pulse Phaser Cannons: Weapon Rating 3&#10;• Micro-Torpedo Payload: Weapon Rating 5 (Single Volley)&#10;• Screening Protocol: Gain +1 to defend capital ships in the same zone." oninput="save()"></textarea>
+    </section>
+</div>
+
+<script>
+    let audioCtx = null, audioEnabled = true;
+    function getAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); return audioCtx; }
+    function toggleAudio() { audioEnabled = !audioEnabled; const b = document.getElementById('audio-toggle-btn'); b.textContent = audioEnabled ? "AUDIO: ON" : "AUDIO: OFF"; if (audioEnabled) playPip(); }
+    function playPip() { if (!audioEnabled) return; const c = getAudio(), o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(1150, c.currentTime); g.gain.setValueAtTime(0.1, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime+0.07); o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime+0.07); }
+    function playRoll() { if (!audioEnabled) return; const c = getAudio(), now = c.currentTime, o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(1100, now); o.frequency.setValueAtTime(1500, now+0.04); g.gain.setValueAtTime(0.12, now); g.gain.exponentialRampToValueAtTime(0.001, now+0.12); o.connect(g); g.connect(c.destination); o.start(); o.stop(now+0.12); }
+    function playConfirm() { if (!audioEnabled) return; const c = getAudio(), now = c.currentTime; [932, 1244, 1864].forEach((f, i) => { const o = c.createOscillator(), g = c.createGain(), st = now + (i * 0.04); o.type = 'sine'; o.frequency.setValueAtTime(f, st); g.gain.setValueAtTime(0.1, st); g.gain.exponentialRampToValueAtTime(0.001, st+0.06); o.connect(g); g.connect(c.destination); o.start(st); o.stop(st+0.06); }); }
+    function checkAudio() { playPip(); save(); }
+
+    function getLadder(v) { const l = ["Abysmal","Terrible","Poor","Mediocre","Average","Fair","Good","Great","Superb","Fantastic","Epic","Legendary"]; return v < -2 ? `Abysmal (${v})` : (v > 8 ? `Legendary (+${v})` : `${l[v+2]} (${v>=0?'+'+v:v})`); }
+    function roll4dF() { const f = [-1,0,1], s = {"-1":"[-]","0":"[ ]","1":"[+]"}; let d = "", sum = 0; for(let i=0;i<4;i++){ const r = f[Math.floor(Math.random()*3)]; d += s[r]+" "; sum += r; } return { d: d.trim(), sum }; }
+
+    async function sendDiscord(actionName, mod) {
+        playRoll();
+        const url = document.getElementById('webhook-url').value.trim();
+        const st = document.getElementById('status');
+        if (!url.startsWith('http')) { alert("Subspace Webhook Offline."); return; }
+        const squad = document.getElementById('sq-name').value.trim() || "Strike Squadron";
+        const dice = roll4dF(); const tot = dice.sum + mod;
+        const payload = { username: squad, embeds: [{ title: `${actionName}: ${tot >= 0 ? '+' + tot : tot} (${getLadder(tot)})`, description: `**Dice:** \`${dice.d}\`\n**Sum:** ${dice.sum} | **Squadron Mod:** ${mod >= 0 ? '+' + mod : mod}`, color: 16750848 }] };
+        st.textContent = "TRANSMITTING...";
+        try {
+            const r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+            if (r.ok) { playConfirm(); st.textContent = "SENT"; setTimeout(()=>st.textContent="READY",2500); }
+        } catch(e) { st.textContent = "FAILED"; }
+    }
+
+    function rollAction(name, id) {
+        const val = document.getElementById(id).value.trim();
+        const match = val.match(/([+-]?\d+)/);
+        const mod = match ? parseInt(match[1], 10) : 0;
+        sendDiscord(name, mod);
+    }
+    function rollCustom() { const m = parseInt(document.getElementById('custom-mod').value,10)||0; sendDiscord("Squadron Action", m); }
+
+    async function broadcastSquadronStatus() {
+        playRoll();
+        const url = document.getElementById('webhook-url').value.trim();
+        if (!url.startsWith('http')) { alert("Enter valid Subspace Webhook URL."); return; }
+        const name = document.getElementById('sq-name').value.trim() || "Strike Squadron";
+        const model = document.getElementById('sq-model').value.trim() || "Patrol Craft";
+        const codie = document.getElementById('sq-codie').value || "4";
+        const sams = document.getElementById('sq-sams').value || "8";
+        const hc = document.getElementById('sq-hc').value.trim() || "None";
+        const tr = document.getElementById('sq-tr').value.trim() || "None";
+        const asp = document.getElementById('sq-aspect').value.trim() || "None";
+        const ships = [1,2,3,4,5,6].map(i => document.getElementById(`sq-${i}`).checked ? '[DESTROYED]' : '[ACTIVE]').join(' ');
+
+        const payload = {
+            username: `TACTICAL FORMATION: ${name}`,
+            embeds: [{
+                title: `🚀 SQUADRON STATUS: ${name} (${model})`,
+                description: `**High Concept:** ${hc}\n**Vulnerability:** ${tr}\n**Unit CODIE:** ${codie} | **Unit SaMS:** ${sams}\n**Formation Aspect:** ${asp}`,
+                color: 16750848,
+                fields: [{ name: "Squadron Operational Readiness (1-6)", value: `\`${ships}\`` }]
+            }]
+        };
+        await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+        playConfirm();
+    }
+
+    function save() {
+        const data = {};
+        document.querySelectorAll('input, textarea').forEach(el => { if (el.id && el.id !== 'webhook-url' && el.id !== 'custom-mod' && el.id !== 'file-in') data[el.id] = el.type === 'checkbox' ? el.checked : el.value; });
+        localStorage.setItem('lcars_mob_ship_data', JSON.stringify(data));
+    }
+    function saveWebhook() { playPip(); localStorage.setItem('lcars_mob_ship_webhook', document.getElementById('webhook-url').value); }
+    function toggleWebhookVisibility() { playPip(); const el = document.getElementById('webhook-url'); el.type = el.type === 'password' ? 'text' : 'password'; }
+
+    function exportData() {
+        playPip(); save();
+        const blob = new Blob([localStorage.getItem('lcars_mob_ship_data') || '{}'], { type: 'application/json' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = `SQUADRON_${(document.getElementById('sq-name').value || 'Unit').replace(/\s+/g,'_')}.json`;
+        a.click(); playConfirm();
+    }
+    function importData(e) {
+        const file = e.target.files[0]; if (!file) return;
+        const r = new FileReader();
+        r.onload = ev => {
+            const data = JSON.parse(ev.target.result);
+            for (let k in data) { const el = document.getElementById(k); if (el) { if (el.type === 'checkbox') el.checked = data[k]; else el.value = data[k]; } }
+            save(); playConfirm();
+        };
+        r.readAsText(file);
+    }
+    window.addEventListener('DOMContentLoaded', () => {
+        const w = localStorage.getItem('lcars_mob_ship_webhook'); if (w) document.getElementById('webhook-url').value = w;
+        const d = JSON.parse(localStorage.getItem('lcars_mob_ship_data') || '{}');
+        for (let k in d) { const el = document.getElementById(k); if (el) { if (el.type === 'checkbox') el.checked = d[k]; else el.value = d[k]; } }
+    });
+</script>
+</body>
+</html>
