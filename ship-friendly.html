@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LCARS Starship MSD - Allied Vessel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --lcars-orange: #ff9900;
+            --lcars-purple: #cc99cc;
+            --lcars-blue: #99ccff;
+            --lcars-yellow: #ffcc00;
+            --lcars-peach: #ffcc99;
+            --lcars-dark: #000000;
+            --lcars-gray: #1a1a1a;
+            --font-main: 'Antonio', sans-serif;
+        }
+        body { background: var(--lcars-dark); color: white; font-family: var(--font-main); margin: 0; padding: 12px; display: flex; flex-direction: column; align-items: center; }
+        .lcars-container { width: 870px; display: flex; flex-direction: column; gap: 10px; }
+        .lcars-bar { background: var(--lcars-gray); border: 2px solid var(--lcars-blue); border-radius: 18px; padding: 6px 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .lcars-bar label { font-size: 9.5pt; color: var(--lcars-blue); font-weight: bold; }
+        .lcars-bar input { flex-grow: 1; background: black; border: 1px solid var(--lcars-orange); color: var(--lcars-orange); padding: 4px 8px; font-family: var(--font-main); border-radius: 4px; }
+        .lcars-header { display: flex; justify-content: space-between; align-items: center; background: var(--lcars-blue); color: black; border-radius: 20px 20px 0 0; padding: 6px 20px; font-weight: bold; }
+        .lcars-panel { border: 2px solid; border-radius: 8px; padding: 10px 12px; position: relative; background: rgba(25,25,25,0.75); }
+        .lcars-panel.blue { border-color: var(--lcars-blue); }
+        .lcars-panel.orange { border-color: var(--lcars-orange); }
+        .lcars-panel.purple { border-color: var(--lcars-purple); }
+        .lcars-panel.yellow { border-color: var(--lcars-yellow); }
+        .lcars-title { position: absolute; top: -9px; left: 14px; background: var(--lcars-dark); padding: 0 6px; font-weight: bold; text-transform: uppercase; font-size: 9.5pt; letter-spacing: 1px; }
+        .blue .lcars-title { color: var(--lcars-blue); }
+        .orange .lcars-title { color: var(--lcars-orange); }
+        .purple .lcars-title { color: var(--lcars-purple); }
+        .yellow .lcars-title { color: var(--lcars-yellow); }
+        input[type="text"], input[type="number"], textarea { width: 100%; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.3); color: white; font-family: var(--font-main); font-size: 10.5pt; padding: 2px 0; box-sizing: border-box; text-transform: uppercase; }
+        input:focus, textarea:focus { outline: none; border-bottom-color: var(--lcars-blue); }
+        textarea { resize: vertical; min-height: 50px; text-transform: none; }
+        label { display: block; font-size: 8pt; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-top: 4px; }
+        .lcars-btn { background: var(--lcars-blue); color: black; border: none; border-radius: 10px; padding: 3px 8px; font-family: var(--font-main); font-weight: bold; font-size: 9pt; cursor: pointer; text-transform: uppercase; }
+        .lcars-btn.orange { background: var(--lcars-orange); }
+        .lcars-btn.yellow { background: var(--lcars-yellow); }
+        .lcars-btn.purple { background: var(--lcars-purple); }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .stress-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+        .stress-row input[type="checkbox"] { appearance: none; width: 22px; height: 18px; border: 2px solid var(--lcars-blue); border-radius: 3px; cursor: pointer; }
+        .stress-row input[type="checkbox"]:checked { background: var(--lcars-blue); }
+        .station-card { background: rgba(153,204,255,0.06); border: 1px solid rgba(153,204,255,0.25); border-radius: 6px; padding: 6px; display: flex; flex-direction: column; gap: 3px; }
+    </style>
+</head>
+<body>
+<div class="lcars-container">
+    <div class="lcars-bar">
+        <label for="webhook-url">SUBSPACE RELAY:</label>
+        <input type="password" id="webhook-url" placeholder="Paste Discord Webhook URL..." onchange="saveWebhook()">
+        <button class="lcars-btn orange" onclick="toggleWebhook()">SHOW/HIDE</button>
+        <button class="lcars-btn yellow" id="audio-btn" onclick="toggleAudio()">AUDIO: ON</button>
+        <button class="lcars-btn" onclick="broadcastVessel()">📡 BROADCAST MSD</button>
+        <button class="lcars-btn orange" onclick="exportData()">💾 EXPORT</button>
+        <button class="lcars-btn purple" onclick="document.getElementById('file-in').click()">📂 IMPORT</button>
+        <input type="file" id="file-in" accept=".json" style="display:none;" onchange="importData(event)">
+        <span id="comm-status" style="font-size: 9.5pt; color: var(--lcars-yellow); margin-left: auto;">READY</span>
+    </div>
+
+    <header class="lcars-header">
+        <span style="font-size: 16pt; letter-spacing: 1.5px;">MASTER SYSTEMS DISPLAY // ALLIED STARSHIP</span>
+        <span style="font-size: 9.5pt;">STARFLEET COMMAND TACTICAL SUPPORT</span>
+    </header>
+
+    <!-- Vessel Profile -->
+    <section class="lcars-panel blue">
+        <div class="lcars-title">VESSEL SPECIFICATIONS & POWER MATRIX</div>
+        <div class="grid-4">
+            <div><label>VESSEL NAME</label><input type="text" id="ship-name" value="U.S.S. ENDEAVOUR" oninput="save()"></div>
+            <div><label>REGISTRY & CLASS</label><input type="text" id="ship-class" value="NCC-71805 // NEBULA-CLASS" oninput="save()"></div>
+            <div><label>COMMANDING OFFICER</label><input type="text" id="ship-co" value="CAPTAIN T'LARA" oninput="save()"></div>
+            <div><label>TACTICAL ASSIGNMENT</label><input type="text" id="ship-role" value="FLEET ESCORT / SUPPORT" oninput="save()"></div>
+        </div>
+        <div class="grid-4" style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed rgba(153,204,255,0.3);">
+            <div><label>CODIE (POWER / SIZE)</label><input type="number" id="ship-codie" value="10" oninput="save()"></div>
+            <div><label>SaMS (AGILITY / STEALTH)</label><input type="number" id="ship-sams" value="4" oninput="save()"></div>
+            <div><label>SHIELD RATING (CODIE CAP)</label><input type="number" id="ship-shield-rating" value="10" oninput="save()"></div>
+            <div>
+                <label>SHIELD STABILITY</label>
+                <div style="display: flex; gap: 4px;">
+                    <input type="number" id="ship-shield-stability" value="6" oninput="save()">
+                    <button class="lcars-btn yellow" onclick="rollShieldStability()">RAISE</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bridge Station Actions -->
+    <section class="lcars-panel yellow">
+        <div class="lcars-title">BRIDGE STATIONS & COOPERATIVE MANEUVERS (CLICK TO ENGAGE)</div>
+        <div class="grid-3">
+            <div class="station-card">
+                <span style="color: var(--lcars-blue); font-weight: bold; font-size: 9pt;">TACTICAL (OFFENSIVE ENERGY)</span>
+                <input type="text" id="act-tactical" value="Type X Phaser Spread (+3)" oninput="save()">
+                <div style="display: flex; gap: 4px; align-items: center;">
+                    <label style="margin:0;">RATING:</label><input type="number" id="mod-tactical" value="3" style="width: 35px; text-align: center;">
+                    <button class="lcars-btn orange" onclick="rollStation('act-tactical', 'mod-tactical', 'Tactical Strike')">FIRE</button>
+                </div>
+            </div>
+            <div class="station-card">
+                <span style="color: var(--lcars-yellow); font-weight: bold; font-size: 9pt;">HELM (SaMS / EVASION)</span>
+                <input type="text" id="act-helm" value="Evasive Maneuvers (+3)" oninput="save()">
+                <div style="display: flex; gap: 4px; align-items: center;">
+                    <label style="margin:0;">RATING:</label><input type="number" id="mod-helm" value="3" style="width: 35px; text-align: center;">
+                    <button class="lcars-btn yellow" onclick="rollStation('act-helm', 'mod-helm', 'Evasive Maneuver')">EVADE</button>
+                </div>
+            </div>
+            <div class="station-card">
+                <span style="color: var(--lcars-peach); font-weight: bold; font-size: 9pt;">SCIENCE (INFORMATION SCAN)</span>
+                <input type="text" id="act-science" value="Sensor Harmonic Scan (+4)" oninput="save()">
+                <div style="display: flex; gap: 4px; align-items: center;">
+                    <label style="margin:0;">RATING:</label><input type="number" id="mod-science" value="4" style="width: 35px; text-align: center;">
+                    <button class="lcars-btn" onclick="rollStation('act-science', 'mod-science', 'Target Scan')">SCAN</button>
+                </div>
+            </div>
+            <div class="station-card">
+                <span style="color: var(--lcars-orange); font-weight: bold; font-size: 9pt;">ENGINEERING (POWER MANAGEMENT)</span>
+                <input type="text" id="act-eng" value="Reroute EPS to Shields (+4)" oninput="save()">
+                <div style="display: flex; gap: 4px; align-items: center;">
+                    <label style="margin:0;">RATING:</label><input type="number" id="mod-eng" value="4" style="width: 35px; text-align: center;">
+                    <button class="lcars-btn orange" onclick="rollStation('act-eng', 'mod-eng', 'Power Management')">REROUTE</button>
+                </div>
+            </div>
+            <div class="station-card">
+                <span style="color: var(--lcars-purple); font-weight: bold; font-size: 9pt;">COMMAND (ORDERS & COORDINATION)</span>
+                <input type="text" id="act-cmd" value="Tactical Coordination (+3)" oninput="save()">
+                <div style="display: flex; gap: 4px; align-items: center;">
+                    <label style="margin:0;">RATING:</label><input type="number" id="mod-cmd" value="3" style="width: 35px; text-align: center;">
+                    <button class="lcars-btn purple" onclick="rollStation('act-cmd', 'mod-cmd', 'Fleet Command')">ORDER</button>
+                </div>
+            </div>
+            <div class="station-card">
+                <span style="color: white; font-weight: bold; font-size: 9pt;">CUSTOM TACTICAL ROLL</span>
+                <input type="text" id="act-custom-label" value="Point Defense Fire" oninput="save()">
+                <div style="display: flex; gap: 4px; align-items: center;">
+                    <label style="margin:0;">MOD:</label><input type="number" id="custom-mod" value="2" style="width: 35px; text-align: center;">
+                    <button class="lcars-btn blue" onclick="rollStation('act-custom-label', 'custom-mod', 'Action Check')">ENGAGE</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Aspects, Hull Stress & Consequences -->
+    <div class="grid-2">
+        <section class="lcars-panel orange">
+            <div class="lcars-title">VESSEL ASPECTS & PROTOCOLS</div>
+            <label>HIGH CONCEPT</label><input type="text" id="ship-hc" value="Versatile Multi-Mission Workhorse of the Fleet" oninput="save()">
+            <label>TROUBLE</label><input type="text" id="ship-tr" value="Bulky Silhouette Against Agile Attack Craft" oninput="save()">
+            <label>MISSION POD CONFIGURATION</label><input type="text" id="ship-a3" value="Tactical Torpedo Pod (Weapon Rating 8)" oninput="save()">
+            <label>VESSEL QUIRK / COMBAT ASPECT</label><input type="text" id="ship-a4" value="Overclocked Structural Integrity Field" oninput="save()">
+        </section>
+
+        <section class="lcars-panel purple">
+            <div class="lcars-title">HULL INTEGRITY & CONSEQUENCES</div>
+            <label>HULL STRESS (10 BOXES - CODIE CAP)</label>
+            <div class="stress-row">
+                <label><input type="checkbox" id="hs-1" onchange="onBox()"> 1</label>
+                <label><input type="checkbox" id="hs-2" onchange="onBox()"> 2</label>
+                <label><input type="checkbox" id="hs-3" onchange="onBox()"> 3</label>
+                <label><input type="checkbox" id="hs-4" onchange="onBox()"> 4</label>
+                <label><input type="checkbox" id="hs-5" onchange="onBox()"> 5</label>
+                <label><input type="checkbox" id="hs-6" onchange="onBox()"> 6</label>
+                <label><input type="checkbox" id="hs-7" onchange="onBox()"> 7</label>
+                <label><input type="checkbox" id="hs-8" onchange="onBox()"> 8</label>
+                <label><input type="checkbox" id="hs-9" onchange="onBox()"> 9</label>
+                <label><input type="checkbox" id="hs-10" onchange="onBox()"> 10</label>
+            </div>
+            <div style="margin-top: 6px;">
+                <label>MILD SUBSYSTEM CONSEQUENCE (-2)</label><input type="text" id="cons-mild" placeholder="e.g. Sensors Scrambled / EPS Leak" oninput="save()">
+                <label>MODERATE SUBSYSTEM CONSEQUENCE (-4)</label><input type="text" id="cons-mod" placeholder="e.g. Port Shield Grid Collapsed" oninput="save()">
+                <label>SEVERE HULL BREACH (-6)</label><input type="text" id="cons-sev" placeholder="e.g. Nacelle Containment Failure" oninput="save()">
+            </div>
+        </section>
+    </div>
+
+    <!-- Starship Stunts -->
+    <section class="lcars-panel blue">
+        <div class="lcars-title">STARSHIP STUNTS & WEAPON RATINGS</div>
+        <textarea id="ship-stunts" style="height: 65px;" placeholder="• Photon Torpedo Spread: Weapon Rating 6. Deals +6 shifts on a successful hit.&#10;• Modular Pod Advantage: +2 to Science or Weapons checks matching the active mission pod." oninput="save()"></textarea>
+    </section>
+</div>
+
+<script>
+    let audioCtx = null, audioEnabled = true;
+    function getAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); return audioCtx; }
+    function toggleAudio() { audioEnabled = !audioEnabled; const b = document.getElementById('audio-btn'); b.textContent = audioEnabled ? "AUDIO: ON" : "AUDIO: OFF"; }
+    function playPip() { if (!audioEnabled) return; const c = getAudio(), now = c.currentTime, o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(880 + Math.random()*300, now); g.gain.setValueAtTime(0.08, now); g.gain.exponentialRampToValueAtTime(0.0001, now + 0.04); o.connect(g); g.connect(c.destination); o.start(now); o.stop(now + 0.04); }
+    function playRoll() { if (!audioEnabled) return; const c = getAudio(), now = c.currentTime, o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(1046.5, now); o.frequency.setValueAtTime(1479.98, now+0.04); g.gain.setValueAtTime(0.12, now); g.gain.exponentialRampToValueAtTime(0.0001, now+0.12); o.connect(g); g.connect(c.destination); o.start(now); o.stop(now+0.12); }
+    function playConfirm() { if (!audioEnabled) return; const c = getAudio(), now = c.currentTime; [880, 1174, 1760].forEach((f, i) => { const o = c.createOscillator(), g = c.createGain(), st = now + (i * 0.045); o.type = 'sine'; o.frequency.setValueAtTime(f, st); g.gain.setValueAtTime(0.1, st); g.gain.exponentialRampToValueAtTime(0.0001, st+0.06); o.connect(g); g.connect(c.destination); o.start(st); o.stop(st+0.06); }); }
+    function onBox() { playPip(); save(); }
+    document.addEventListener('keydown', e => { if (['INPUT','TEXTAREA'].includes(e.target.tagName) && !['Shift','Control','Alt','Meta','Tab'].includes(e.key)) playPip(); });
+
+    function getLadder(v) { const l = ["Abysmal","Terrible","Poor","Mediocre","Average","Fair","Good","Great","Superb","Fantastic","Epic","Legendary"]; return v < -2 ? `Abysmal (${v})` : (v > 8 ? `Legendary (+${v})` : `${l[v+2]} (${v>=0?'+'+v:v})`); }
+    function roll4dF() { const f = [-1,0,1], s = { "-1": "−", "0": " ", "1": "+" }; let raw = [], sum = 0; for(let i=0;i<4;i++){ const r = f[Math.floor(Math.random()*3)]; raw.push(r); sum += r; } return { raw, sum, sym: s }; }
+
+    async function sendDiscord(action, mod) {
+        playRoll();
+        const url = document.getElementById('webhook-url').value.trim();
+        const st = document.getElementById('comm-status');
+        if (!url.startsWith('http')) { alert("Subspace Relay Offline: Please input a valid Discord Webhook URL."); return; }
+        const ship = document.getElementById('ship-name').value.trim() || "Allied Starship";
+        const dice = roll4dF(); const tot = dice.sum + mod;
+
+        const top = dice.raw.map(() => "┌───┐").join(" ");
+        const mid = dice.raw.map(r => `│ ${dice.sym[r]} │`).join(" ");
+        const bot = dice.raw.map(() => "└───┘").join(" ");
+        const diceBox = `\`\`\`text\n${top}\n${mid}\n${bot}\n\`\`\``;
+
+        const payload = {
+            username: `🛡️ ${ship}`,
+            embeds: [{
+                title: `STARSHIP ACTION // ${action.toUpperCase()}`,
+                description: `${diceBox}\n**Dice:** \`${dice.sum >= 0 ? '+' + dice.sum : dice.sum}\` | **Station Rating:** \`${mod >= 0 ? '+' + mod : mod}\` | **Total Shifts:** \`${tot >= 0 ? '+' + tot : tot}\``,
+                color: 10079487,
+                fields: [{ name: "TACTICAL EVALUATION", value: `>>> ### ❖ ${getLadder(tot).toUpperCase()}` }]
+            }]
+        };
+        st.textContent = "TRANSMITTING...";
+        try {
+            const r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+            if (r.ok) { playConfirm(); st.textContent = "TRANSMITTED"; setTimeout(()=>st.textContent="READY",2500); }
+        } catch(e) { st.textContent = "FAILED"; }
+    }
+
+    function rollStation(labelId, modId, fallback) {
+        const label = document.getElementById(labelId).value.trim() || fallback;
+        const mod = parseInt(document.getElementById(modId).value, 10) || 0;
+        sendDiscord(label, mod);
+    }
+
+    function rollShieldStability() {
+        const engMod = parseInt(document.getElementById('mod-eng').value, 10) || 3;
+        const dice = roll4dF();
+        const stab = Math.max(2, dice.sum + engMod);
+        document.getElementById('ship-shield-stability').value = stab;
+        save();
+        sendDiscord(`Shields Raised // Dynamic Stability Set to ${stab}`, engMod);
+    }
+
+    async function broadcastVessel() {
+        playRoll();
+        const url = document.getElementById('webhook-url').value.trim();
+        if (!url.startsWith('http')) { alert("Enter Webhook URL."); return; }
+        const name = document.getElementById('ship-name').value.trim();
+        const cls = document.getElementById('ship-class').value.trim();
+        const codie = document.getElementById('ship-codie').value;
+        const sams = document.getElementById('ship-sams').value;
+        const sRating = document.getElementById('ship-shield-rating').value;
+        const sStab = document.getElementById('ship-shield-stability').value;
+        const hs = [1,2,3,4,5,6,7,8,9,10].map(i => document.getElementById(`hs-${i}`).checked ? '[X]' : '[ ]').join(' ');
+        const cm = document.getElementById('cons-mild').value.trim() || "None";
+        const cd = document.getElementById('cons-mod').value.trim() || "None";
+        const cs = document.getElementById('cons-sev').value.trim() || "None";
+
+        const payload = {
+            username: `MSD TELEMETRY // ${name}`,
+            embeds: [{
+                title: `📋 FLEET TELEMETRY: ${name} (${cls})`,
+                description: `**CODIE:** ${codie} | **SaMS:** ${sams}\n**Shield Stability:** ${sStab} (Floor) | **Shield Rating:** ${sRating} (Cap)`,
+                color: 10079487,
+                fields: [
+                    { name: "Hull Stress Track (1-10)", value: `\`${hs}\``, inline: false },
+                    { name: "Subsystem Consequences", value: `**Mild (-2):** ${cm}\n**Moderate (-4):** ${cd}\n**Severe (-6):** ${cs}`, inline: false }
+                ]
+            }]
+        };
+        await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+        playConfirm();
+    }
+
+    function save() {
+        const data = {};
+        document.querySelectorAll('input, textarea').forEach(el => { if (el.id && el.id !== 'webhook-url' && el.id !== 'file-in') data[el.id] = el.type === 'checkbox' ? el.checked : el.value; });
+        localStorage.setItem('lcars_ship_friendly_data', JSON.stringify(data));
+    }
+    function saveWebhook() { playPip(); localStorage.setItem('lcars_ship_friendly_webhook', document.getElementById('webhook-url').value); }
+    function toggleWebhook() { playPip(); const el = document.getElementById('webhook-url'); el.type = el.type === 'password' ? 'text' : 'password'; }
+
+    function exportData() {
+        playPip(); save();
+        const blob = new Blob([localStorage.getItem('lcars_ship_friendly_data') || '{}'], { type: 'application/json' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = `MSD_${(document.getElementById('ship-name').value || 'SHIP').replace(/\s+/g,'_')}.json`;
+        a.click(); playConfirm();
+    }
+    function importData(e) {
+        const file = e.target.files[0]; if (!file) return;
+        const r = new FileReader();
+        r.onload = ev => {
+            const data = JSON.parse(ev.target.result);
+            for (let k in data) { const el = document.getElementById(k); if (el) { if (el.type === 'checkbox') el.checked = data[k]; else el.value = data[k]; } }
+            save(); playConfirm();
+        };
+        r.readAsText(file);
+    }
+    window.addEventListener('DOMContentLoaded', () => {
+        const w = localStorage.getItem('lcars_ship_friendly_webhook'); if (w) document.getElementById('webhook-url').value = w;
+        const d = JSON.parse(localStorage.getItem('lcars_ship_friendly_data') || '{}');
+        for (let k in d) { const el = document.getElementById(k); if (el) { if (el.type === 'checkbox') el.checked = d[k]; else el.value = d[k]; } }
+    });
+</script>
+</body>
+</html>
