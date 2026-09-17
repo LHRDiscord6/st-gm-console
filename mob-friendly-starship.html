@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LCARS Flight MSD - Allied Squadron</title>
+    <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --lcars-orange: #ff9900;
+            --lcars-purple: #cc99cc;
+            --lcars-blue: #99ccff;
+            --lcars-yellow: #ffcc00;
+            --lcars-peach: #ffcc99;
+            --lcars-red: #cc3333;
+            --lcars-dark: #000000;
+            --lcars-gray: #1a1a1a;
+            --font-main: 'Antonio', sans-serif;
+        }
+        body { background: var(--lcars-dark); color: white; font-family: var(--font-main); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .lcars-container { width: 880px; display: flex; flex-direction: column; gap: 12px; }
+        .lcars-bar { background: var(--lcars-gray); border: 2px solid var(--lcars-blue); border-radius: 18px; padding: 8px 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .lcars-bar label { font-size: 10pt; color: var(--lcars-blue); font-weight: bold; }
+        .lcars-bar input { flex-grow: 1; background: black; border: 1px solid var(--lcars-yellow); color: var(--lcars-yellow); padding: 4px 8px; font-family: var(--font-main); border-radius: 4px; }
+        .lcars-header { display: flex; justify-content: space-between; align-items: center; background: var(--lcars-yellow); color: black; border-radius: 25px 25px 0 0; padding: 8px 24px; font-weight: bold; }
+        .lcars-panel { border: 2px solid; border-radius: 8px; padding: 12px; position: relative; background: rgba(25,25,25,0.7); }
+        .lcars-panel.blue { border-color: var(--lcars-blue); }
+        .lcars-panel.yellow { border-color: var(--lcars-yellow); }
+        .lcars-panel.orange { border-color: var(--lcars-orange); }
+        .lcars-title { position: absolute; top: -10px; left: 15px; background: var(--lcars-dark); padding: 0 8px; font-weight: bold; text-transform: uppercase; font-size: 10pt; }
+        .blue .lcars-title { color: var(--lcars-blue); }
+        .yellow .lcars-title { color: var(--lcars-yellow); }
+        .orange .lcars-title { color: var(--lcars-orange); }
+        input[type="text"], input[type="number"], textarea { width: 100%; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.3); color: white; font-family: var(--font-main); font-size: 11pt; padding: 3px 0; box-sizing: border-box; text-transform: uppercase; }
+        input:focus, textarea:focus { outline: none; border-bottom-color: var(--lcars-blue); }
+        label { display: block; font-size: 8.5pt; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-top: 5px; }
+        .lcars-btn { background: var(--lcars-blue); color: black; border: none; border-radius: 12px; padding: 4px 10px; font-family: var(--font-main); font-weight: bold; font-size: 9.5pt; cursor: pointer; text-transform: uppercase; }
+        .lcars-btn.yellow { background: var(--lcars-yellow); }
+        .lcars-btn.orange { background: var(--lcars-orange); }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .station-row { display: grid; grid-template-columns: 110px 1fr 60px; gap: 8px; align-items: center; margin-bottom: 6px; background: rgba(153,204,255,0.08); padding: 4px 8px; border-radius: 4px; }
+        .station-label { font-size: 9.5pt; font-weight: bold; color: var(--lcars-blue); }
+        .stress-bar-grid { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+        .stress-bar-grid input[type="checkbox"] { appearance: none; width: 26px; height: 22px; border: 2px solid var(--lcars-blue); border-radius: 4px; cursor: pointer; }
+        .stress-bar-grid input[type="checkbox"]:checked { background: var(--lcars-blue); }
+
+        .schematic-box {
+            border: 2px dashed var(--lcars-blue);
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 8px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .schematic-box:hover {
+            border-color: var(--lcars-yellow);
+            background: rgba(255, 204, 0, 0.05);
+        }
+        .schematic-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+        .schematic-prompt {
+            text-align: center;
+            color: var(--lcars-blue);
+            font-size: 9pt;
+            letter-spacing: 1px;
+            pointer-events: none;
+        }
+        .schematic-clear-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(204, 51, 51, 0.85);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 7.5pt;
+            font-weight: bold;
+            padding: 2px 6px;
+            display: none;
+            cursor: pointer;
+            font-family: var(--font-main);
+        }
+        .schematic-clear-btn:hover { background: var(--lcars-red); }
+    </style>
+</head>
+<body>
+<div class="lcars-container">
+    <div class="lcars-bar">
+        <label for="webhook-url">SUBSPACE RELAY:</label>
+        <input type="password" id="webhook-url" placeholder="Discord Webhook URL..." onchange="saveWebhook()">
+        <button class="lcars-btn yellow" onclick="toggleWebhookVisibility()">SHOW/HIDE</button>
+        <button class="lcars-btn orange" id="audio-toggle-btn" onclick="toggleAudio()">AUDIO: ON</button>
+        <button class="lcars-btn" onclick="broadcastShipStatus()">📡 BROADCAST SQUAD</button>
+        <button class="lcars-btn yellow" onclick="exportData()">💾 EXPORT</button>
+        <button class="lcars-btn orange" onclick="document.getElementById('file-in').click()">📂 IMPORT</button>
+        <input type="file" id="file-in" accept=".json" style="display:none;" onchange="importData(event)">
+        <span id="status" style="font-size: 10pt; color: var(--lcars-yellow); margin-left: auto;">READY</span>
+    </div>
+
+    <div class="lcars-header">
+        <span style="font-size: 18pt; letter-spacing: 2px;">TACTICAL FLIGHT DISPLAY // ALLIED MOB SQUADRON</span>
+        <span style="font-size: 10pt;">STARFLEET WING / FIGHTER DETACHMENT</span>
+    </div>
+
+    <section class="lcars-panel blue">
+        <div class="lcars-title">SQUADRON STATUS & FORMATION SCHEMATIC</div>
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px; align-items: stretch;">
+            <div>
+                <div class="grid-4">
+                    <div><label>SQUADRON CALLSIGN</label><input type="text" id="ship-name" placeholder="e.g. VALKYRIE FLIGHT" oninput="save()"></div>
+                    <div><label>CRAFT CLASS</label><input type="text" id="ship-reg" placeholder="e.g. PEREGRINE-CLASS" oninput="save()"></div>
+                    <div><label>CARRIER / BASE</label><input type="text" id="ship-class" placeholder="e.g. USS BASTION" oninput="save()"></div>
+                    <div><label>FLIGHT LEADER</label><input type="text" id="ship-co" placeholder="e.g. LT. CHEN" oninput="save()"></div>
+                </div>
+                <div class="grid-2" style="margin-top: 6px;">
+                    <div><label>SQUADRON HIGH CONCEPT</label><input type="text" id="ship-hc" placeholder="e.g. Agile Peregrine Interceptor Wing" oninput="save()"></div>
+                    <div><label>SQUADRON TROUBLE</label><input type="text" id="ship-tr" placeholder="e.g. Fragile Hull Under Capital Fire" oninput="save()"></div>
+                </div>
+            </div>
+            <div style="display: flex; flex-direction: column;">
+                <label style="margin-top: 0;">TACTICAL SCHEMATIC</label>
+                <div class="schematic-box" id="schematic-box" onclick="triggerImagePicker(event)">
+                    <img id="schematic-img" src="" alt="Squadron Schematic">
+                    <div id="schematic-prompt" class="schematic-prompt">
+                        <div>📷 [ LOAD SCHEMATIC ]</div>
+                        <div style="font-size: 7.5pt; color: var(--lcars-yellow); margin-top: 3px;">CLICK TO SELECT SAVED FILE</div>
+                    </div>
+                    <button class="schematic-clear-btn" id="schematic-clear-btn" onclick="clearImage(event)">✕ REMOVE</button>
+                    <input type="file" id="image-file-input" accept="image/*" style="display: none;" onchange="loadImageFromDisk(event)">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="grid-2">
+        <section class="lcars-panel orange">
+            <div class="lcars-title">FLIGHT RATINGS & CASUALTIES</div>
+            <div class="grid-2">
+                <div>
+                    <label>CRAFT CODIE</label>
+                    <input type="number" id="ship-codie" placeholder="e.g. 4" oninput="save()">
+                </div>
+                <div>
+                    <label>FLIGHT SaMS</label>
+                    <input type="number" id="ship-sams" placeholder="e.g. 8" oninput="save()">
+                </div>
+            </div>
+            <div style="margin-top: 8px;">
+                <label>OPERATIONAL CRAFT (UNCHECK IF DISABLED / LOST)</label>
+                <div class="stress-bar-grid">
+                    <label><input type="checkbox" id="craft-1" onchange="checkAudio()"><br>W1</label>
+                    <label><input type="checkbox" id="craft-2" onchange="checkAudio()"><br>W2</label>
+                    <label><input type="checkbox" id="craft-3" onchange="checkAudio()"><br>W3</label>
+                    <label><input type="checkbox" id="craft-4" onchange="checkAudio()"><br>W4</label>
+                    <label><input type="checkbox" id="craft-5" onchange="checkAudio()"><br>W5</label>
+                    <label><input type="checkbox" id="craft-6" onchange="checkAudio()"><br>W6</label>
+                </div>
+            </div>
+            <div style="margin-top: 8px;">
+                <label>SQUADRON STRESS TRACK</label>
+                <div class="stress-bar-grid">
+                    <label><input type="checkbox" id="ss-1" onchange="checkAudio()"><br>1</label>
+                    <label><input type="checkbox" id="ss-2" onchange="checkAudio()"><br>2</label>
+                    <label><input type="checkbox" id="ss-3" onchange="checkAudio()"><br>3</label>
+                    <label><input type="checkbox" id="ss-4" onchange="checkAudio()"><br>4</label>
+                    <label><input type="checkbox" id="ss-5" onchange="checkAudio()"><br>5</label>
+                    <label><input type="checkbox" id="ss-6" onchange="checkAudio()"><br>6</label>
+                </div>
+            </div>
+        </section>
+
+        <section class="lcars-panel yellow">
+            <div class="lcars-title">SQUADRON MANEUVERS (CLICK ROLL)</div>
+            <div class="station-row">
+                <span class="station-label">STRAFE</span>
+                <input type="text" id="st-tac" placeholder="e.g. Convergent Strafe (+4)" oninput="save()">
+                <button class="lcars-btn" onclick="rollStation('STRAFING RUN', 'st-tac')">ROLL</button>
+            </div>
+            <div class="station-row">
+                <span class="station-label">SCREEN</span>
+                <input type="text" id="st-helm" placeholder="e.g. Screening Defense (+4)" oninput="save()">
+                <button class="lcars-btn" onclick="rollStation('SCREENING INTERCEPT', 'st-helm')">ROLL</button>
+            </div>
+            <div class="station-row">
+                <span class="station-label">HARASS</span>
+                <input type="text" id="st-sci" placeholder="e.g. Target Painting (+3)" oninput="save()">
+                <button class="lcars-btn" onclick="rollStation('TARGET PAINTING', 'st-sci')">ROLL</button>
+            </div>
+            <div class="station-row">
+                <span class="station-label">FLIGHT LEAD</span>
+                <input type="text" id="st-cmd" placeholder="e.g. Formation Attack Delta (+3)" oninput="save()">
+                <button class="lcars-btn" onclick="rollStation('FLIGHT ORDERS', 'st-cmd')">ROLL</button>
+            </div>
+        </section>
+    </div>
+
+    <section class="lcars-panel blue">
+        <div class="lcars-title">SQUADRON TACTICS & CARRIER SUPPORT NOTES</div>
+        <textarea id="ship-stunts" style="height: 65px;" placeholder="• Fast Attack Pattern Delta (+2 to hit against capital ships)&#10;• Sacrificial Intercept (absorb 1 shift of stress intended for the mothership)"></textarea>
+    </section>
+</div>
+
+<script>
+    let audioCtx = null, audioEnabled = true;
+    function getAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); return audioCtx; }
+    function toggleAudio() { audioEnabled = !audioEnabled; const b = document.getElementById('audio-toggle-btn'); b.textContent = audioEnabled ? "AUDIO: ON" : "AUDIO: OFF"; if (audioEnabled) playPip(); }
+    function playPip() { if (!audioEnabled) return; const c = getAudio(), o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(880+Math.random()*300, c.currentTime); g.gain.setValueAtTime(0.08, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime+0.04); o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime+0.04); }
+    function playRoll() { if (!audioEnabled) return; const c = getAudio(), now = c.currentTime, o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(1046, now); o.frequency.setValueAtTime(1480, now+0.04); g.gain.setValueAtTime(0.12, now); g.gain.exponentialRampToValueAtTime(0.001, now+0.12); o.connect(g); g.connect(c.destination); o.start(); o.stop(now+0.12); }
+    function playConfirm() { if (!audioEnabled) return; const c = getAudio(), now = c.currentTime; [880, 1175, 1760].forEach((f, i) => { const o = c.createOscillator(), g = c.createGain(), st = now + (i * 0.04); o.type = 'sine'; o.frequency.setValueAtTime(f, st); g.gain.setValueAtTime(0.1, st); g.gain.exponentialRampToValueAtTime(0.001, st+0.06); o.connect(g); g.connect(c.destination); o.start(st); o.stop(st+0.06); }); }
+    function checkAudio() { playPip(); save(); }
+
+    function triggerImagePicker(event) {
+        if (event.target.id === 'schematic-clear-btn') return;
+        playPip();
+        document.getElementById('image-file-input').click();
+    }
+
+    function loadImageFromDisk(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            displayLoadedImage(e.target.result);
+            save();
+            playConfirm();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function displayLoadedImage(dataUrl) {
+        const img = document.getElementById('schematic-img');
+        const prompt = document.getElementById('schematic-prompt');
+        const clearBtn = document.getElementById('schematic-clear-btn');
+        const box = document.getElementById('schematic-box');
+
+        if (dataUrl && dataUrl.startsWith('data:image')) {
+            img.src = dataUrl;
+            img.style.display = 'block';
+            prompt.style.display = 'none';
+            clearBtn.style.display = 'block';
+            box.style.borderStyle = 'solid';
+        } else {
+            img.src = '';
+            img.style.display = 'none';
+            prompt.style.display = 'block';
+            clearBtn.style.display = 'none';
+            box.style.borderStyle = 'dashed';
+        }
+    }
+
+    function clearImage(event) {
+        event.stopPropagation();
+        playPip();
+        displayLoadedImage('');
+        document.getElementById('image-file-input').value = '';
+        save();
+    }
+
+    function getLadder(v) { const l = ["Abysmal","Terrible","Poor","Mediocre","Average","Fair","Good","Great","Superb","Fantastic","Epic","Legendary"]; return v < -2 ? `Abysmal (${v})` : (v > 8 ? `Legendary (+${v})` : `${l[v+2]} (${v>=0?'+'+v:v})`); }
+    function roll4dF() { const f = [-1,0,1], s = {"-1":"[-]","0":"[ ]","1":"[+]"}; let d = "", sum = 0; for(let i=0;i<4;i++){ const r = f[Math.floor(Math.random()*3)]; d += s[r]+" "; sum += r; } return { d: d.trim(), sum }; }
+
+    async function sendDiscord(station, actionName, mod) {
+        playRoll();
+        const url = document.getElementById('webhook-url').value.trim();
+        const st = document.getElementById('status');
+        if (!url.startsWith('http')) { alert("Enter valid Subspace Webhook URL."); return; }
+        const squad = document.getElementById('ship-name').value.trim() || "Allied Squadron";
+        const dice = roll4dF(); const tot = dice.sum + mod;
+        const payload = { username: `✈️ ${squad}`, embeds: [{ title: `[${station}] ${actionName}: ${tot >= 0 ? '+' + tot : tot} (${getLadder(tot)})`, description: `**Dice:** \`${dice.d}\`\n**Roll Sum:** ${dice.sum} | **Modifier:** ${mod >= 0 ? '+' + mod : mod}`, color: 10079487 }] };
+        st.textContent = "TRANSMITTING...";
+        try {
+            const r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+            if (r.ok) { playConfirm(); st.textContent = "SENT"; setTimeout(()=>st.textContent="READY",2500); }
+        } catch(e) { st.textContent = "FAILED"; }
+    }
+
+    function rollStation(station, id) {
+        const val = document.getElementById(id).value.trim();
+        const match = val.match(/([+-]?\d+)/);
+        const mod = match ? parseInt(match[1], 10) : 0;
+        sendDiscord(station, val || "Maneuver", mod);
+    }
+
+    async function broadcastShipStatus() {
+        playRoll();
+        const url = document.getElementById('webhook-url').value.trim();
+        if (!url.startsWith('http')) { alert("Subspace Relay Offline."); return; }
+        const name = document.getElementById('ship-name').value.trim() || "Allied Squadron";
+        const reg = document.getElementById('ship-reg').value.trim();
+        const codie = document.getElementById('ship-codie').value || "0";
+        const sams = document.getElementById('ship-sams').value || "0";
+        const activeCraft = [1,2,3,4,5,6].map(i => document.getElementById(`craft-${i}`).checked ? '[X]' : '[ ]').join(' ');
+        const stress = [1,2,3,4,5,6].map(i => document.getElementById(`ss-${i}`).checked ? '[X]' : '[ ]').join(' ');
+
+        const payload = {
+            username: `WING REPORT // ${name}`,
+            embeds: [{
+                title: `📋 SQUADRON TELEMETRY: ${name} (${reg})`,
+                description: `**Craft CODIE:** ${codie} | **Flight SaMS:** ${sams}`,
+                color: 10079487,
+                fields: [
+                    { name: "Active Craft Roster (1-6)", value: `\`${activeCraft}\`` },
+                    { name: "Squadron Damage Track", value: `\`${stress}\`` }
+                ]
+            }]
+        };
+        await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+        playConfirm();
+    }
+
+    function save() {
+        const data = {};
+        document.querySelectorAll('input, textarea').forEach(el => { 
+            if (el.id && el.id !== 'webhook-url' && el.id !== 'file-in' && el.id !== 'image-file-input') {
+                data[el.id] = el.type === 'checkbox' ? el.checked : el.value; 
+            }
+        });
+        data['schematic_image_data'] = document.getElementById('schematic-img').src;
+        localStorage.setItem('lcars_ship_mob_friendly_data', JSON.stringify(data));
+    }
+    function saveWebhook() { playPip(); localStorage.setItem('lcars_ship_mob_friendly_webhook', document.getElementById('webhook-url').value); }
+    function toggleWebhookVisibility() { playPip(); const el = document.getElementById('webhook-url'); el.type = el.type === 'password' ? 'text' : 'password'; }
+
+    function exportData() {
+        playPip(); save();
+        const blob = new Blob([localStorage.getItem('lcars_ship_mob_friendly_data') || '{}'], { type: 'application/json' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = `SQUAD_${(document.getElementById('ship-name').value || 'Flight').replace(/\s+/g,'_')}.json`;
+        a.click(); playConfirm();
+    }
+    function importData(e) {
+        const file = e.target.files[0]; if (!file) return;
+        const r = new FileReader();
+        r.onload = ev => {
+            const data = JSON.parse(ev.target.result);
+            for (let k in data) { 
+                const el = document.getElementById(k); 
+                if (el) { 
+                    if (el.type === 'checkbox') el.checked = data[k]; 
+                    else el.value = data[k]; 
+                } 
+            }
+            if (data['schematic_image_data']) displayLoadedImage(data['schematic_image_data']);
+            save(); playConfirm();
+        };
+        r.readAsText(file);
+    }
+    window.addEventListener('DOMContentLoaded', () => {
+        const w = localStorage.getItem('lcars_ship_mob_friendly_webhook'); if (w) document.getElementById('webhook-url').value = w;
+        const d = JSON.parse(localStorage.getItem('lcars_ship_mob_friendly_data') || '{}');
+        for (let k in d) { 
+            const el = document.getElementById(k); 
+            if (el) { 
+                if (el.type === 'checkbox') el.checked = d[k]; 
+                else el.value = d[k]; 
+            } 
+        }
+        if (d['schematic_image_data']) displayLoadedImage(d['schematic_image_data']);
+    });
+</script>
+</body>
+</html>
